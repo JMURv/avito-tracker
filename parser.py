@@ -6,11 +6,15 @@ from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 import time
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 
 ua = UserAgent()
 search = 'rtx%203080'.lower()
-url = f'https://www.computeruniverse.net/ru/search?query={search}&sortBy=Prod-ComputerUniverse_ru_price_asc'
+url = f'https://www.computeruniverse.net/en/search?query={search}'
+
+PAGES = 15
 
 
 def parse_content(html):
@@ -23,23 +27,26 @@ def parse_content(html):
 
 
 def download_page(url):
+
     options = Options()
     options.add_argument(f'user-agent={ua.chrome}')
+    options.add_argument('--disable-notifications')
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=options)
     driver.get(url)
-    for i in range(30):
-        time.sleep(2)
-        html = driver.page_source
-        parse_content(html)
-        try:
-            button = driver.find_elements(By.XPATH, '//*[@id="main-content"]/div[2]/div[2]/ul')
-            button[-1].click()
-            time.sleep(2)
-        except(Exception):
-            push = driver.find_element(By.XPATH, '/html/body/div[2]/div/div[1]')
-            push.click()
-    return
+    print(driver.get_cookies())
+    # for page in range(1, PAGES):
+    #     time.sleep(2)
+    #     html = driver.page_source
+    #     parse_content(html)
+    #     try:
+    #         button = driver.find_elements(By.XPATH, '//*[@id="main-content"]/div[2]/div[2]/ul')[-1]
+    #         button.click()
+    #         continue
+    #     except(Exception):
+    #         print('End')
+    # return
 
 
-print(download_page(url))
+if __name__ == '__main__':
+    print(download_page(url))
