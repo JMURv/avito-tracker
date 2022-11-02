@@ -9,53 +9,56 @@ import time
 import re
 
 ua = UserAgent()
-url = f'https://www.avito.ru/moskva_i_mo/tovary_dlya_kompyutera/komplektuyuschie/videokarty-ASgBAgICAkTGB~pm7gmmZw?cd=1&q=rtx+3080&s=104'
+url = 'https://www.avito.ru/moskva_i_mo/tovary_dlya_kompyutera/komplektuyuschie/videokarty-ASgBAgICAkTGB~pm7gmmZw?cd=1&q=rtx+3080&s=104'
+PREVIOUS_DATA = {}
 
 
 def parse_info(page):
-    res = {
+    info = {
         'link': '',
         'name': '',
         'img': '',
-        'price': ''
+        'price': '',
+        'description': '',
     }
     soup = BeautifulSoup(page, 'html.parser')
     for link in soup.find_all("div", {'class': re.compile(r'^iva-item-content')}):
-        a_attr = link.findNext('a')
-        img_attr = link.findNext('img')
-        res['link'] = a_attr['href']
-        res['name'] = a_attr['title']
-        res['img'] = img_attr['src']
-        for div in link.find_all('div'):
-            if div.attrs.get('class'):
-                if div['class'][0].startswith('iva-item-priceStep'):
-                    meta = div.find('meta', {'itemprop': 'price'})
-                    res['price'] = meta['content']
-        break
-    print(res)
+        try:
+            info['description'] = link.find('div', {'class': re.compile(r'^iva-item-text')}).text
+            info['price'] = link.find('meta', {'itemprop': 'price'})['content']
+            info['link'] = link.find('a', {'itemprop': 'url'})['href']
+            info['name'] = link.find('h3', {'itemprop': 'name'}).text
+            info['img'] = link.findNext('img')['src']
+            break
+        except(Exception):
+            continue
+    return info
 
 
-def get_avito(driver):
+def get_avito(driver, prev=PREVIOUS_DATA):
     driver.get(url)
     time.sleep(2)
-    parse_info(driver.page_source)
+    new_data = parse_info(driver.page_source)
+    if new_data != prev:
+        prev = new_data  # Sent new info
+    return prev
 
 
 def get_session():
     ua = UserAgent()
     options = Options()
     options.add_argument(f'user-agent={ua.chrome}')
-    # options.add_argument('--disable-notifications')
     options.add_argument("--disable-blink-features=AutomationControlled")
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=options)
     return driver
 
 
-def all_handler():
-    driver = get_session()
+def all_handler(driver):
     get_avito(driver)
 
 
 if __name__ == '__main__':
-    all_handler()
+    driver = get_session()
+    all_handler(driver)
+    driver.quit()
