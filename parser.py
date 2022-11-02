@@ -27,25 +27,24 @@ def parse_content(html):
 
 
 def download_page(url):
-
     options = Options()
     options.add_argument(f'user-agent={ua.chrome}')
     options.add_argument('--disable-notifications')
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=options)
-    driver.get(url)
-    print(driver.get_cookies())
-    # for page in range(1, PAGES):
-    #     time.sleep(2)
-    #     html = driver.page_source
-    #     parse_content(html)
-    #     try:
-    #         button = driver.find_elements(By.XPATH, '//*[@id="main-content"]/div[2]/div[2]/ul')[-1]
-    #         button.click()
-    #         continue
-    #     except(Exception):
-    #         print('End')
-    # return
+    for page in range(1, PAGES):
+        driver.get(url)
+        time.sleep(2)
+        html = driver.page_source
+        parse_content(html)
+        try:
+            button = driver.find_elements(By.XPATH, '//*[@id="main-content"]/div[2]/div[2]/ul')[-1]
+            button.click()
+            url = driver.current_url
+            continue
+        except(Exception):
+            print('End')
+    return
 
 
 if __name__ == '__main__':
