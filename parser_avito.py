@@ -1,14 +1,9 @@
-from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
+from computer_universe.addons import get_session
 from bs4 import BeautifulSoup
-from fake_useragent import UserAgent
 import time
 import re
 
-ua = UserAgent()
+
 url = 'https://www.avito.ru/moskva_i_mo/tovary_dlya_kompyutera/komplektuyuschie/videokarty-ASgBAgICAkTGB~pm7gmmZw?cd=1&q=rtx+3080&s=104'
 PREVIOUS_DATA = {}
 
@@ -44,21 +39,7 @@ def get_avito(driver, prev=PREVIOUS_DATA):
     return prev
 
 
-def get_session():
-    ua = UserAgent()
-    options = Options()
-    options.add_argument(f'user-agent={ua.chrome}')
-    options.add_argument("--disable-blink-features=AutomationControlled")
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=options)
-    return driver
-
-
-def all_handler(driver):
-    get_avito(driver)
-
-
 if __name__ == '__main__':
     driver = get_session()
-    all_handler(driver)
+    get_avito(driver)
     driver.quit()

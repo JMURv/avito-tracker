@@ -1,27 +1,10 @@
-from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from bs4 import BeautifulSoup
-from fake_useragent import UserAgent
+from computer_universe.addons import get_session
 import time
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+
 
 NUMBER = '9771465424'
-
-
-def get_session():
-    ua = UserAgent()
-    options = Options()
-    options.add_argument(f'user-agent={ua.chrome}')
-    # options.add_argument('--disable-notifications')
-    options.add_argument("--disable-blink-features=AutomationControlled")
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=options)
-    return driver
 
 
 def tele2_handler(driver):
@@ -53,12 +36,12 @@ def hh_handler(driver):
     time.sleep(2)
 
 
-def all_handler():
-    driver = get_session()
+def all_handler(driver):
     # tele2_handler(driver)
     # delivery_handler(driver)
     hh_handler(driver)
 
 
 if __name__ == '__main__':
-    all_handler()
+    driver = get_session()
+    all_handler(driver)
