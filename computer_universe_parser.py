@@ -2,7 +2,6 @@ import re
 import time
 from computer_universe.addons import get_session
 from bs4 import BeautifulSoup
-from fake_useragent import UserAgent
 from selenium.webdriver.common.by import By
 from computer_universe.addons import page_wait, get_right_xpath
 
@@ -10,7 +9,6 @@ from computer_universe.addons import page_wait, get_right_xpath
 SEARCH = 'rtx%203080'.lower()
 URL = f'https://www.computeruniverse.net/en/search?query={SEARCH}'
 PAGES = 50
-DIGIT = 7
 
 
 def parse_content(html):
@@ -24,23 +22,25 @@ def parse_content(html):
         for link in link.find_all("li", {'class': 'bullet-points__point'}):
             description.append(link.text)
         description = '\n'.join(description)
-        print(name)
+        print(name, href, price, img)
 
 
 def download_page(driver, url):
     driver.get(url)
     for page in range(1, PAGES+1):
         time.sleep(3)
-        page_wait(driver)
-        html = driver.page_source
-        parse_content(html)
         try:
-            driver.find_element(
-                By.XPATH, f'//*[@id="main-content"]/div[2]/div[2]/ul/li[{get_right_xpath(page, DIGIT)}]/button'
-            ).click()
-            continue
+            page_wait(driver)
+            html = driver.page_source
+            parse_content(html)
+
         except(Exception):
             continue
+
+        finally:
+            driver.find_element(
+                By.XPATH, f'//*[@id="main-content"]/div[2]/div[2]/ul/li[{get_right_xpath(page)}]/button'
+            ).click()
     return
 
 
