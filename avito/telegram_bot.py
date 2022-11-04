@@ -1,22 +1,8 @@
-import aiogram.types
-from aiogram import Bot, Dispatcher, executor, types
-from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
-from aiogram.dispatcher.filters import Command
+from aiogram import executor, types
 from aiogram.dispatcher import FSMContext
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from States import SetWorker
-
-TOKEN = '5679447524:AAGZiFO08CAvliBV9J3foebr4W1TDBxOKKY'
-bot = Bot(token=TOKEN)
-storage = MemoryStorage()
-dp = Dispatcher(bot, storage=storage)
-
-
-b1 = KeyboardButton('Добавить задачу')
-b2 = KeyboardButton('Удалить задачу')
-
-keyboard_client = ReplyKeyboardMarkup(resize_keyboard=True)
-keyboard_client.row(b1, b2)
+from initializer import dp
+from keyboards import keyboard_client
 
 
 @dp.message_handler(commands=['start'])
@@ -33,7 +19,7 @@ async def set_worker(message: types.Message):
 @dp.message_handler(state=SetWorker.set_worker_name)
 async def get_name(message: types.Message, state: FSMContext):
     answer = message.text
-    await state.update_data(set_worker_name=answer)  # Имя задачи в worker_name
+    await state.update_data(set_worker_name=answer)
     await message.answer(f'Отправьте правильный URL для задачи {answer}')
     await SetWorker.set_worker_url.set()
 

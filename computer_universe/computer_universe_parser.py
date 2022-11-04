@@ -1,9 +1,9 @@
 import re
 import time
-from computer_universe.addons import get_session
+from addons.addons import get_session
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
-from computer_universe.addons import allpage_load
+from addons.addons import allpage_load
 
 SEARCH_LIST = ['rtx%203080', 'rtx2080']
 SEARCH = SEARCH_LIST[-1].lower()
@@ -22,7 +22,7 @@ def parse_content(html):
         for link in link.find_all("li", {'class': 'bullet-points__point'}):
             description.append(link.text)
         description = '\n'.join(description)
-        print(name, href, price, img)
+        print(name, f'https://www.computeruniverse.net{href}', price, img)
 
 
 def download_page(driver, url):
