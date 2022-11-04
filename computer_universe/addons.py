@@ -6,17 +6,8 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 
 
-def get_right_xpath(page):
-    digit = 7
-    if page >= 3:
-        digit = 8
-    if page >= 4:
-        digit = 9
-    return digit
-
-
-def page_wait(driver):
-    for _ in range(1, 6):
+def allpage_load(driver):
+    for _ in range(1, 7):
         if _ == 1:
             driver.execute_script(
                 "window.scrollTo(0, 1800)"
@@ -40,6 +31,10 @@ def page_wait(driver):
         if _ == 5:
             driver.execute_script(
                 "window.scrollTo(0, 7200)"
+            )
+        if _ == 6:
+            driver.execute_script(
+                "window.scrollTo(0, 8200)"
             )
         time.sleep(0.5)
 

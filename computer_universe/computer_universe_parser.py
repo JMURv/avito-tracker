@@ -3,10 +3,10 @@ import time
 from computer_universe.addons import get_session
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
-from computer_universe.addons import page_wait, get_right_xpath
+from computer_universe.addons import allpage_load
 
-
-SEARCH = 'rtx%203080'.lower()
+SEARCH_LIST = ['rtx%203080', 'rtx2080']
+SEARCH = SEARCH_LIST[-1].lower()
 URL = f'https://www.computeruniverse.net/en/search?query={SEARCH}'
 PAGES = 50
 
@@ -30,17 +30,14 @@ def download_page(driver, url):
     for page in range(1, PAGES+1):
         time.sleep(3)
         try:
-            page_wait(driver)
+            allpage_load(driver)
             html = driver.page_source
             parse_content(html)
-
         except(Exception):
             continue
-
         finally:
-            driver.find_element(
-                By.XPATH, f'//*[@id="main-content"]/div[2]/div[2]/ul/li[{get_right_xpath(page)}]/button'
-            ).click()
+            pre = driver.find_elements(By.CLASS_NAME, 'Pagination__naviButton.false')[-1]
+            pre.find_element(By.CLASS_NAME, 'Pagination__naviButton__inner').click()
     return
 
 
