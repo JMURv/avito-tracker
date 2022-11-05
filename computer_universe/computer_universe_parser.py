@@ -1,9 +1,13 @@
 import re
 import time
+
+import selenium.common
+
 from addons.addons import get_session
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from addons.addons import allpage_load
+from selenium.common import exceptions
 
 SEARCH_LIST = ['rtx%203080', 'rtx2080']
 SEARCH = SEARCH_LIST[-1].lower()
@@ -17,12 +21,25 @@ def parse_content(html):
         name = link.find("a", {'role': 'button'}).text
         href = link.find("a", {'role': 'button'})['href']
         price = link.find("div", {'class': 'price price--grey-alt flex'}).find('span').text
-        img = link.find("img", {'alt': name})['src']
+        img = link.find("img", {'alt': name}).get('src')
         description = []
         for link in link.find_all("li", {'class': 'bullet-points__point'}):
             description.append(link.text)
         description = '\n'.join(description)
         print(name, f'https://www.computeruniverse.net{href}', price, img)
+
+
+def check_end_of_pagination(driver, page):
+    if page > 2:
+        try:
+            driver.find_element(By.CLASS_NAME, 'Pagination__naviButton.Pagination__naviButton-disabled')
+            driver.quit()
+        except exceptions.NoSuchElementException:
+            pre = driver.find_elements(By.CLASS_NAME, 'Pagination__naviButton.false')[-1]
+            pre.find_element(By.CLASS_NAME, 'Pagination__naviButton__inner').click()
+    else:
+        pre = driver.find_elements(By.CLASS_NAME, 'Pagination__naviButton.false')[-1]
+        pre.find_element(By.CLASS_NAME, 'Pagination__naviButton__inner').click()
 
 
 def download_page(driver, url):
@@ -31,13 +48,11 @@ def download_page(driver, url):
         time.sleep(3)
         try:
             allpage_load(driver)
-            html = driver.page_source
-            parse_content(html)
-        except(Exception):
+            parse_content(driver.page_source)
+        except Exception:
             continue
         finally:
-            pre = driver.find_elements(By.CLASS_NAME, 'Pagination__naviButton.false')[-1]
-            pre.find_element(By.CLASS_NAME, 'Pagination__naviButton__inner').click()
+            check_end_of_pagination(driver, page)
     return
 
 
