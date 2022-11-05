@@ -43,6 +43,7 @@ def get_session():
     options = Options()
     options.add_argument(f'user-agent={UserAgent().chrome}')
     options.add_argument("--disable-blink-features=AutomationControlled")
+    # options.add_argument("--headless")  # Silent Mode
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=options)
     return driver

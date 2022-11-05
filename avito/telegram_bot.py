@@ -11,7 +11,7 @@ from copy import deepcopy
 def five_min_call(url):
     first_res = get_avito(url)
     while True:
-        sleep(10)
+        sleep(600)
         now = get_avito(url)
         if now['name'] != first_res['name']:
             yield f"Обновление!\n\n" \
