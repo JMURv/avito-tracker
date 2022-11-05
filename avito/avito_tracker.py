@@ -4,6 +4,7 @@ import time
 import re
 
 # url = 'https://www.avito.ru/moskva_i_mo/tovary_dlya_kompyutera/komplektuyuschie/videokarty-ASgBAgICAkTGB~pm7gmmZw?cd=1&q=rtx+3080&s=104'
+PREV = {}
 
 
 def parse_info(page):
@@ -35,8 +36,3 @@ def get_avito(url):
     new_data = parse_info(driver.page_source)
     driver.quit()
     return new_data
-    # if new_data != prev:
-    #     prev = new_data  # Sent new info
-    # return prev
-
-

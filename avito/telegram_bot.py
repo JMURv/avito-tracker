@@ -5,12 +5,23 @@ from initializer import dp
 from keyboards import keyboard_client
 from avito_tracker import get_avito
 from time import sleep
+from copy import deepcopy
 
 
 def five_min_call(url):
+    first_res = get_avito(url)
     while True:
         sleep(10)
-        return get_avito(url)
+        now = get_avito(url)
+        if now['name'] != first_res['name']:
+            yield f"Обновление!\n\n" \
+                   f"Название: {now['name']}\n" \
+                   f"Описание: {now['description']}\n" \
+                   f"Цена: {now['price']}р\n" \
+                   f"Ссылка: {now['link']}\n "
+            first_res = now.deepcopy()
+        else:
+            yield f"Ничего не случилось"
 
 
 @dp.message_handler(commands=['start'])
@@ -52,7 +63,8 @@ async def get_url(message: types.Message, state: FSMContext):
     url = data.get('set_worker_url')
     await message.answer(f'Отлично!\nНачинаю следить за {name}')
 
-    await message.answer(five_min_call(url))  # Функция вызывающая авито каждые 5 минут
+    for x in five_min_call(url):  # Генераторная функция, вызывающая авито каждые 10 секунд
+        await message.answer(x)
     await state.finish()
 
 
