@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import time
 import re
 
-url = 'https://www.avito.ru/moskva_i_mo/tovary_dlya_kompyutera/komplektuyuschie/videokarty-ASgBAgICAkTGB~pm7gmmZw?cd=1&q=rtx+3080&s=104'
+# url = 'https://www.avito.ru/moskva_i_mo/tovary_dlya_kompyutera/komplektuyuschie/videokarty-ASgBAgICAkTGB~pm7gmmZw?cd=1&q=rtx+3080&s=104'
 
 
 def parse_info(page):
@@ -28,17 +28,15 @@ def parse_info(page):
     return info
 
 
-def get_avito(driver):
+def get_avito(url):
+    driver = get_session()
     driver.get(url)
     time.sleep(2)
     new_data = parse_info(driver.page_source)
     driver.quit()
-    print(new_data)
+    return new_data
     # if new_data != prev:
     #     prev = new_data  # Sent new info
     # return prev
 
 
-if __name__ == '__main__':
-    driver = get_session()
-    get_avito(driver)

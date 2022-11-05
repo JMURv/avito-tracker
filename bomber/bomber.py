@@ -1,6 +1,6 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from computer_universe.addons import get_session
+from addons.addons import get_session
 import time
 
 
@@ -36,10 +36,22 @@ def hh_handler(driver):
     time.sleep(2)
 
 
+def mvideo_handler(driver):
+    driver.get('https://www.mvideo.ru/login')
+    time.sleep(2)
+    driver.find_element(By.CLASS_NAME, 'old_br_btn').click()
+    time.sleep(1)
+    #driver.find_element####
+    # driver.find_element(By.ID, 'mvideo-form-field-input-0').send_keys(NUMBER)
+    # driver.find_element(By.LINK_TEXT, 'Продолжить').click()
+    time.sleep(2)
+
+
 def all_handler(driver):
     # tele2_handler(driver)
     # delivery_handler(driver)
-    hh_handler(driver)
+    # hh_handler(driver)
+    mvideo_handler(driver)
 
 
 if __name__ == '__main__':
