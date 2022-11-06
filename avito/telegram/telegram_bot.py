@@ -14,22 +14,23 @@ async def five_min_call(url):
     while True:
         sleep(10)
         now = get_avito(url)
-        if now['name'] != first_res['name']:
+        if now.get('name') != first_res.get('name'):
+            first_res = deepcopy(now)
             yield f"Обновление!\n\n" \
                    f"Название: {now['name']}\n" \
                    f"Описание: {now['description']}\n" \
                    f"Цена: {now['price']}р\n" \
                    f"Ссылка: {now['link']}\n "
-            first_res = deepcopy(now)
         else:
-            yield f"Ничего не случилось"
+            yield 'Ничего не произошло'
 
 
-async def start_process(user_id):
-    workers = read_data(user_id)
-    for name, url in workers.items():
-        async for x in five_min_call(url):
-            print(x)
+async def start_process(user_id, message):
+    worker = read_data(user_id)
+    for name, url in worker.items():
+        async for result in five_min_call(url):
+            print(result)
+            await message.answer(f'Задача: {name}\n{result}')
 
 
 @dp.message_handler(commands=['start'])
@@ -39,7 +40,7 @@ async def send_welcome(message: types.Message):
 
 @dp.message_handler(commands=['start_track'])
 async def start_tracking(message: types.Message):
-    await start_process(message.from_user.id)
+    await start_process(message.from_user.id, message)
 
 
 @dp.message_handler()
@@ -74,12 +75,10 @@ async def get_url(message: types.Message, state: FSMContext):
     data = await state.get_data()
     name = data.get('set_worker_name')
     url = data.get('set_worker_url')
-    await message.answer(f'Отлично!\nНачинаю следить за {name}')
+    await message.answer(f'Добавляем {name} в нашу базу..')
     insert_values(message.from_user.id, f"'{name}'", f"'{url}'")
-
-    start_process(message.from_user.id)
-    # for x in start_process(message.from_user.id):
-    #     await message.answer(x)
+    await message.answer(f'Отлично!\nНачинаю следить за {name}')
+    await start_process(message.from_user.id)
     await state.finish()
 
 

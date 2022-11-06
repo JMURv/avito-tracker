@@ -39,8 +39,6 @@ def read_data(user_id):
     disconnect(cursor, connection)
     return result
 
-# print(read_data(783983520))
-
 
 def delete_values(user_id, name):
     pass

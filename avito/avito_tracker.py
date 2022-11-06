@@ -33,3 +33,4 @@ def get_avito(url):
     new_data = parse_info(driver.page_source)
     driver.quit()
     return new_data
+
