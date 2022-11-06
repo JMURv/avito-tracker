@@ -8,32 +8,20 @@ from copy import deepcopy
 from avito.avito_tracker import get_avito
 from avito.data_base.db import insert_values, read_data, delete_data
 
-#
-# async def five_min_call(url):
-#     first_res = get_avito(url)
-#     while True:
-#         sleep(10)
-#         now = get_avito(url)
-#         if now.get('name') != first_res.get('name'):
-#             first_res = deepcopy(now)
-#             yield f"Обновление!\n\n" \
-#                    f"Название: {now['name']}\n" \
-#                    f"Описание: {now['description']}\n" \
-#                    f"Цена: {now['price']}р\n" \
-#                    f"Ссылка: {now['link']}\n "
-#         else:
-#             yield 'Ничего не произошло'
-
 
 async def start_process(user_id, message):
     worker = read_data(user_id)
+    first_results = {}
+    await message.answer('Запоминаем текущее объявление..\nЕсли у Вас их несколько, время загрузки вырастет')
+    for name, url in worker.items():
+        first_results[name] = get_avito(url)
+    await message.answer('Запомнили! Включаем слежение..')
     while True:
+        sleep(10)
         for name, url in worker.items():
-            first_res = get_avito(url)
-            sleep(10)
             now = get_avito(url)
-            if now.get('name') != first_res.get('name'):
-                first_res = deepcopy(now)
+            if now.get('name') != first_results.get(name).get('name'):
+                first_results[name] = deepcopy(now)
                 text = f"Обновление!\n\n" \
                    f"Название: {now['name']}\n" \
                    f"Описание: {now['description']}\n" \
