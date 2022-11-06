@@ -3,9 +3,6 @@ from bs4 import BeautifulSoup
 import time
 import re
 
-# url = 'https://www.avito.ru/moskva_i_mo/tovary_dlya_kompyutera/komplektuyuschie/videokarty-ASgBAgICAkTGB~pm7gmmZw?cd=1&q=rtx+3080&s=104'
-PREV = {}
-
 
 def parse_info(page):
     info = {
@@ -24,7 +21,7 @@ def parse_info(page):
             info['name'] = link.find('h3', {'itemprop': 'name'}).text
             info['img'] = link.findNext('img')['src']
             break
-        except(Exception):
+        except Exception:
             continue
     return info
 

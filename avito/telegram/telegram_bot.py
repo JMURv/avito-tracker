@@ -3,9 +3,10 @@ from aiogram.dispatcher import FSMContext
 from States import SetWorker
 from initializer import dp
 from keyboards import keyboard_client
-from avito_tracker import get_avito
 from time import sleep
 from copy import deepcopy
+from avito.avito_tracker import get_avito
+from avito.data_base.db import insert_values
 
 
 def five_min_call(url):
@@ -19,9 +20,13 @@ def five_min_call(url):
                    f"Описание: {now['description']}\n" \
                    f"Цена: {now['price']}р\n" \
                    f"Ссылка: {now['link']}\n "
-            first_res = now.deepcopy()
+            first_res = deepcopy(now)
         else:
             yield f"Ничего не случилось"
+
+
+def start_process():
+    pass
 
 
 @dp.message_handler(commands=['start'])
@@ -62,8 +67,9 @@ async def get_url(message: types.Message, state: FSMContext):
     name = data.get('set_worker_name')
     url = data.get('set_worker_url')
     await message.answer(f'Отлично!\nНачинаю следить за {name}')
+    insert_values(message.from_user.id, f"'{name}'", f"'{url}'")
 
-    for x in five_min_call(url):  # Генераторная функция, вызывающая авито каждые 10 секунд
+    for x in five_min_call(url):
         await message.answer(x)
     await state.finish()
 
