@@ -6,13 +6,13 @@ from keyboards import keyboard_client
 from time import sleep
 from copy import deepcopy
 from avito.avito_tracker import get_avito
-from avito.data_base.db import insert_values
+from avito.data_base.db import insert_values, read_data
 
 
 def five_min_call(url):
     first_res = get_avito(url)
     while True:
-        sleep(600)
+        sleep(10)
         now = get_avito(url)
         if now['name'] != first_res['name']:
             yield f"Обновление!\n\n" \
@@ -25,13 +25,37 @@ def five_min_call(url):
             yield f"Ничего не случилось"
 
 
-def start_process():
-    pass
+def start_process(user_id):
+    workers = read_data(user_id)
+    for name, url in workers.items():
+        for x in five_min_call(url):
+            print(x)
+    # while True:
+    #     for name, url in workers.items():
+    #         url = url.strip("'")
+    #         print(url)
+    #         first_res = get_avito(url)
+    #         sleep(10)
+    #         now = get_avito(url)
+    #         if now['name'] != first_res['name']:
+    #             yield f"Обновление!\n\n" \
+    #                    f"Название: {now['name']}\n" \
+    #                    f"Описание: {now['description']}\n" \
+    #                    f"Цена: {now['price']}р\n" \
+    #                    f"Ссылка: {now['link']}\n "
+    #             first_res = deepcopy(now)
+    #         else:
+    #             yield f"Ничего не случилось"
 
 
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
     await message.reply("Привет!\nЯ бот, который следит за объявлениями за тебя!", reply_markup=keyboard_client)
+
+
+# @dp.message_handler(commands=['start_track'])
+# async def start_tracking(message: types.Message):
+#     await start_process(message.from_user.id)
 
 
 @dp.message_handler()
@@ -69,8 +93,9 @@ async def get_url(message: types.Message, state: FSMContext):
     await message.answer(f'Отлично!\nНачинаю следить за {name}')
     insert_values(message.from_user.id, f"'{name}'", f"'{url}'")
 
-    for x in five_min_call(url):
-        await message.answer(x)
+    start_process(message.from_user.id)
+    # for x in start_process(message.from_user.id):
+    #     await message.answer(x)
     await state.finish()
 
 
