@@ -5,19 +5,23 @@ from initializer import dp
 from keyboards import keyboard_client
 from time import sleep
 from copy import deepcopy
-from avito.avito_tracker import get_avito
+from avito.avito_tracker import get_avito, multi
 from avito.data_base.db import insert_values, read_data, delete_data, count_data
 
 
 async def check(worker, url):
     if len(worker.values()) > 1:
-        return get_avito(url, multi=True)
+        urls = []
+        for k, v in worker.items():
+            urls.append(v)
+        return multi(urls)
     else:
         return get_avito(url)
 
 
 async def calculate_first_result(user_id, message):
     worker = read_data(user_id)
+    #  ПРОВЕРКА НА КОЛ-ВО ССЫЛОК
     first_results = {}
     await message.answer('Запоминаем текущее объявление..\nЕсли у Вас их несколько, время загрузки вырастет')
     for name, url in worker.items():

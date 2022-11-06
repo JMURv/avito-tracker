@@ -27,7 +27,7 @@ def parse_info(page):
     return info
 
 
-def get_avito(url, multi=False):
+def get_avito(url):
     driver = get_session()
     driver.get(url)
     time.sleep(2)
@@ -35,3 +35,10 @@ def get_avito(url, multi=False):
     driver.quit()
     return new_data
 
+
+def multi(pages):
+    result = []
+    with ThreadPoolExecutor() as executor:
+        for page in executor.map(get_avito, pages):
+            result.append(page)
+        return result
