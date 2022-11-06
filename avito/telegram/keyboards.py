@@ -1,7 +1,9 @@
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 
-b1 = KeyboardButton('Добавить задачу')
-b2 = KeyboardButton('Удалить задачу')
+add_task = KeyboardButton('Добавить задачу')
+stop_task = KeyboardButton('Остановить задачу')
+info = KeyboardButton('Инфо')
+
 
 keyboard_client = ReplyKeyboardMarkup(resize_keyboard=True)
-keyboard_client.row(b1, b2)
+keyboard_client.row(add_task, stop_task)

@@ -40,6 +40,10 @@ def read_data(user_id):
     return result
 
 
-def delete_values(user_id, name):
-    pass
+def delete_data(user_id):
+    cursor, connection = get_connection()
+    delete_query = f"DELETE FROM workers WHERE USER_ID = {user_id}"
+    cursor.execute(delete_query)
+    connection.commit()
+    disconnect(cursor, connection)
 
