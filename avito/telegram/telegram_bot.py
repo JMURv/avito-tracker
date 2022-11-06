@@ -6,27 +6,34 @@ from keyboards import keyboard_client
 from time import sleep
 from copy import deepcopy
 from avito.avito_tracker import get_avito
-from avito.data_base.db import insert_values, read_data, delete_data
+from avito.data_base.db import insert_values, read_data, delete_data, count_data
 
 
-async def start_process(user_id, message):
+async def check(worker, url):
+    if len(worker.values()) > 1:
+        return get_avito(url, multi=True)
+    else:
+        return get_avito(url)
+
+
+async def calculate_first_result(user_id, message):
     worker = read_data(user_id)
     first_results = {}
     await message.answer('Запоминаем текущее объявление..\nЕсли у Вас их несколько, время загрузки вырастет')
     for name, url in worker.items():
-        first_results[name] = get_avito(url)
+        first_results[name] = await check(worker, url)
     await message.answer('Запомнили! Включаем слежение..')
     while True:
         sleep(10)
         for name, url in worker.items():
-            now = get_avito(url)
+            now = await check(worker, url)
             if now.get('name') != first_results.get(name).get('name'):
                 first_results[name] = deepcopy(now)
                 text = f"Обновление!\n\n" \
-                   f"Название: {now['name']}\n" \
-                   f"Описание: {now['description']}\n" \
-                   f"Цена: {now['price']}р\n" \
-                   f"Ссылка: {now['link']}\n "
+                       f"Название: {now['name']}\n" \
+                       f"Описание: {now['description']}\n" \
+                       f"Цена: {now['price']}р\n" \
+                       f"Ссылка: {now['link']}\n "
                 await message.answer(f'Задача: {name}\n{text}')
             else:
                 text = f'Ничего не произошло'
@@ -40,7 +47,7 @@ async def send_welcome(message: types.Message):
 
 @dp.message_handler(commands=['start_track'])
 async def start_tracking(message: types.Message):
-    await start_process(message.from_user.id, message)
+    await calculate_first_result(message.from_user.id, message)
 
 
 @dp.message_handler()

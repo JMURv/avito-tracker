@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor, wait, as_completed
 from addons.addons import get_session
 from bs4 import BeautifulSoup
 import time
@@ -26,7 +27,7 @@ def parse_info(page):
     return info
 
 
-def get_avito(url):
+def get_avito(url, multi=False):
     driver = get_session()
     driver.get(url)
     time.sleep(2)

@@ -47,3 +47,12 @@ def delete_data(user_id):
     connection.commit()
     disconnect(cursor, connection)
 
+
+def count_data(user_id):
+    cursor, connection = get_connection()
+    count_query = f'SELECT COUNT(WORKER_NAME) FROM workers WHERE USER_ID = {user_id};'
+    cursor.execute(count_query)
+    data = cursor.fetchone()[0]
+    connection.commit()
+    disconnect(cursor, connection)
+    return data
