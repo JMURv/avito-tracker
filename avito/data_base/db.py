@@ -40,12 +40,17 @@ def read_data(user_id):
     return result
 
 
-def delete_data(user_id):
+def delete_data(user_id, worker_name):
     cursor, connection = get_connection()
-    delete_query = f"DELETE FROM workers WHERE USER_ID = {user_id}"
-    cursor.execute(delete_query)
-    connection.commit()
-    disconnect(cursor, connection)
+    try:
+        delete_query = f"DELETE FROM workers WHERE USER_ID = {user_id} AND WORKER_NAME = {worker_name}"
+        cursor.execute(delete_query)
+        connection.commit()
+        return 'Успешное удаление'
+    except:
+        return 'Неправильное имя задачи'
+    finally:
+        disconnect(cursor, connection)
 
 
 def count_data(user_id):

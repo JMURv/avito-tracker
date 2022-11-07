@@ -1,6 +1,6 @@
 from aiogram import executor, types
 from aiogram.dispatcher import FSMContext
-from States import SetWorker
+from States import SetWorker, DeleteWorker
 from initializer import dp
 from keyboards import keyboard_client
 from time import sleep
@@ -44,7 +44,7 @@ async def send_welcome(message: types.Message):
 
 
 @dp.message_handler(commands=['help'])
-async def send_welcome(message: types.Message):
+async def send_help(message: types.Message):
     await message.answer("У нас всего одно правило - не более 5 объявлений на одного пользователя", reply_markup=keyboard_client)
 
 
@@ -60,8 +60,29 @@ async def reply_text(message: types.Message):
     if message.text == 'Остановить задачу':
         await message.answer('ABOBA')
     if message.text == 'Удалить задачу':
-        delete_data(message.from_user.id)
-        await message.answer('Успешное удаление')
+        await delete_worker(message)
+    else:
+        await message.answer('Неправильный запрос')
+        # await message.answer('Успешное удаление')
+
+
+@dp.message_handler(commands=['delete_worker'])
+async def delete_worker(message: types.Message):
+    """Start deleting a task"""
+    await message.answer('Введи имя задачи')
+    await DeleteWorker.set_worker_name.set()
+
+
+@dp.message_handler(state=DeleteWorker.set_worker_name)
+async def delete_name(message: types.Message, state: FSMContext):
+    answer = message.text
+    await state.update_data(set_worker_name=answer)
+    data = await state.get_data()
+    worker_name = data.get('set_worker_name')
+
+    db_resp = delete_data(message.from_user.id, worker_name)
+    await message.answer(worker_name)
+    await message.answer(db_resp)  # Как-то надо закончить процесс
 
 
 @dp.message_handler(commands=['set_new'])
