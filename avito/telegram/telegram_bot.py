@@ -5,56 +5,47 @@ from initializer import dp
 from keyboards import keyboard_client
 from time import sleep
 from copy import deepcopy
-# from avito.avito_tracker import multi
 from avito.avito_tracker import async_avito
 from avito.data_base.db import insert_values, read_data, delete_data
+import asyncio
 
-
-# async def calculate_first_result(user_id, message):
-#     worker = read_data(user_id)
-#     urls = list(worker.values())
-#     names = list(worker.keys())
-#     first_results = dict(zip(names, multi(urls)))
-#     while True:
-#         sleep(10)
-#         now = dict(zip(names, multi(urls)))
-#         for name in names:
-#             if now.get(name).get('name') != first_results.get(name).get('name'):
-#                 first_results[name] = deepcopy(now[name])
-#                 text = f"Обновление!\n\n" \
-#                        f"Название: {now[name]['name']}\n" \
-#                        f"Описание: {now[name]['description']}\n" \
-#                        f"Цена: {now[name]['price']}р\n" \
-#                        f"Ссылка: {now[name]['link']}\n "
-#             else:
-#                 text = f'Ничего не произошло'
-#             await message.answer(f'Задача: {name}\n{text}')
 
 async def calculate_first_result(user_id, message):
     worker = read_data(user_id)
-    first_results = {}
-    for name, url in worker.items():
-        first_results[name] = await async_avito(url)
-        print(f"\n\nABOOOOOOOOBBAA{name}\n\n{url}\n\n")
-    # while True:
-    #     sleep(10)
-    #     now = dict(zip(names, multi(urls)))
-    #     for name in names:
-    #         if now.get(name).get('name') != first_results.get(name).get('name'):
-    #             first_results[name] = deepcopy(now[name])
-    #             text = f"Обновление!\n\n" \
-    #                    f"Название: {now[name]['name']}\n" \
-    #                    f"Описание: {now[name]['description']}\n" \
-    #                    f"Цена: {now[name]['price']}р\n" \
-    #                    f"Ссылка: {now[name]['link']}\n "
-    #         else:
-    #             text = f'Ничего не произошло'
-    #         await message.answer(f'Задача: {name}\n{text}')
+    message.answer(f'Запоминаем текущее объявление..')
+    tasks = []
+    names = list(worker.keys())
+    for url in worker.values():
+        task = asyncio.create_task(async_avito(url))
+        tasks.append(task)
+    first_results = dict(zip(names, await asyncio.gather(*tasks)))
+    message.answer('Запомнили!\nВключаем слежение..')
+    while True:
+        sleep(10)
+        tasks = []
+        for url in worker.values():
+            task = asyncio.create_task(async_avito(url))
+            tasks.append(task)
+        now = dict(zip(names, await asyncio.gather(*tasks)))
+        for name in names:
+            if now.get(name).get('name') != first_results.get(name).get('name'):
+                first_results[name] = deepcopy(now[name])
+                text = f"Обновление!\n\n" \
+                       f"Название: {now[name]['name']}\n" \
+                       f"Описание: {now[name]['description']}\n" \
+                       f"Цена: {now[name]['price']}р\n" \
+                       f"Ссылка: {now[name]['link']}\n "
+                await message.answer(f'Задача: {name}\n{text}')
 
 
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
     await message.answer("Привет!\nЯ бот, который следит за объявлениями за тебя!", reply_markup=keyboard_client)
+
+
+@dp.message_handler(commands=['help'])
+async def send_welcome(message: types.Message):
+    await message.answer("У нас всего одно правило - не более 5 объявлений на одного пользователя", reply_markup=keyboard_client)
 
 
 @dp.message_handler(commands=['start_track'])
@@ -99,8 +90,7 @@ async def get_url(message: types.Message, state: FSMContext):
     url = data.get('set_worker_url')
     await message.answer(f'Добавляем {name} в нашу базу..')
     insert_values(message.from_user.id, f"'{name}'", f"'{url}'")
-    await message.answer(f'Отлично!\nВведите "/start_track", чтобы начать отслеживание')
-    # await start_process(message.from_user.id, message)
+    await message.answer(f'Отлично!\nВведите "/start_track", чтобы начать отслеживание или /set_new чтобы добавить еще одно объявление')
     await state.finish()
 
 
