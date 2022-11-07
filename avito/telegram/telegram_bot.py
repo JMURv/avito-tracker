@@ -5,43 +5,54 @@ from initializer import dp
 from keyboards import keyboard_client
 from time import sleep
 from copy import deepcopy
-from avito.avito_tracker import get_avito, multi
-from avito.data_base.db import insert_values, read_data, delete_data, count_data
-
-
-async def check(worker, url):
-    if len(worker.values()) > 1:
-        urls = []
-        for k, v in worker.items():
-            urls.append(v)
-        return multi(urls)
-    else:
-        return get_avito(url)
+from avito.avito_tracker import multi
+from avito.data_base.db import insert_values, read_data, delete_data
 
 
 async def calculate_first_result(user_id, message):
     worker = read_data(user_id)
-    #  ПРОВЕРКА НА КОЛ-ВО ССЫЛОК
-    first_results = {}
-    await message.answer('Запоминаем текущее объявление..\nЕсли у Вас их несколько, время загрузки вырастет')
-    for name, url in worker.items():
-        first_results[name] = await check(worker, url)
-    await message.answer('Запомнили! Включаем слежение..')
+    urls = list(worker.values())
+    names = list(worker.keys())
+    first_results = dict(zip(names, multi(urls)))
     while True:
         sleep(10)
-        for name, url in worker.items():
-            now = await check(worker, url)
-            if now.get('name') != first_results.get(name).get('name'):
-                first_results[name] = deepcopy(now)
+        now = dict(zip(names, multi(urls)))
+        for name in names:
+            if now.get(name).get('name') != first_results.get(name).get('name'):
+                first_results[name] = deepcopy(now[name])
                 text = f"Обновление!\n\n" \
-                       f"Название: {now['name']}\n" \
-                       f"Описание: {now['description']}\n" \
-                       f"Цена: {now['price']}р\n" \
-                       f"Ссылка: {now['link']}\n "
-                await message.answer(f'Задача: {name}\n{text}')
+                       f"Название: {now[name]['name']}\n" \
+                       f"Описание: {now[name]['description']}\n" \
+                       f"Цена: {now[name]['price']}р\n" \
+                       f"Ссылка: {now[name]['link']}\n "
             else:
                 text = f'Ничего не произошло'
-                await message.answer(f'Задача: {name}\n{text}')
+            await message.answer(f'Задача: {name}\n{text}')
+
+
+
+
+
+    # first_results = {}
+    # await message.answer('Запоминаем текущее объявление..\nЕсли у Вас их несколько, время загрузки вырастет')
+    # for name, url in worker.items():
+    #     first_results[name] = await check(worker, url)
+    # await message.answer('Запомнили! Включаем слежение..')
+    # while True:
+    #     sleep(10)
+    #     for name, url in worker.items():
+    #         now = await check(worker, url)
+    #         if now.get('name') != first_results.get(name).get('name'):
+    #             first_results[name] = deepcopy(now)
+    #             text = f"Обновление!\n\n" \
+    #                    f"Название: {now['name']}\n" \
+    #                    f"Описание: {now['description']}\n" \
+    #                    f"Цена: {now['price']}р\n" \
+    #                    f"Ссылка: {now['link']}\n "
+    #             await message.answer(f'Задача: {name}\n{text}')
+    #         else:
+    #             text = f'Ничего не произошло'
+    #             await message.answer(f'Задача: {name}\n{text}')
 
 
 @dp.message_handler(commands=['start'])
