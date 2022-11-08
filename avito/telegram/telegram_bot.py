@@ -9,8 +9,12 @@ from avito.avito_tracker import async_avito
 from avito.data_base.db import insert_values, read_data, delete_data
 import asyncio
 
+FLAG = True
+
 
 async def calculate_first_result(user_id, message):
+    global FLAG
+    FLAG = True
     worker = read_data(user_id)
     await message.answer(f'Запоминаем текущее объявление..')
     tasks = []
@@ -20,7 +24,7 @@ async def calculate_first_result(user_id, message):
         tasks.append(task)
     first_results = dict(zip(names, await asyncio.gather(*tasks)))
     await message.answer('Запомнили!\nВключаем слежение..')
-    while True:
+    while FLAG:
         sleep(10)
         tasks = []
         for url in worker.values():
@@ -63,10 +67,16 @@ async def reply_text(message: types.Message):
     if message.text == 'Запустить слежение':
         await start_tracking(message)
     if message.text == 'Остановить слежение':
-        await message.answer('ABOBA')
+        await stop_tracking()
 
     if message.text == 'Инфо':
         await send_help(message)
+
+
+@dp.message_handler()
+async def stop_tracking():
+    global FLAG
+    FLAG = False
 
 
 @dp.message_handler(commands=['delete_worker'])
