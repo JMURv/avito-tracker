@@ -2,10 +2,10 @@ from bs4 import BeautifulSoup
 from time import sleep
 import re
 from arsenic import get_session, browsers, services
-import os
 
-
-CHROMEDRIVER = 'C:\\Users\\DOROTHY\\PycharmProjects\\avito-tracker\\chrome_driver\\chromedriver.exe'
+root = 'C:\\Users\\DOROTHY\\PycharmProjects\\avito-tracker'
+driver_path = '\\chrome_driver\\chromedriver.exe'
+CHROMEDRIVER = root + driver_path
 
 
 async def parse_info(page):
