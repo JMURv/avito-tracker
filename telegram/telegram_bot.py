@@ -30,7 +30,9 @@ async def tracking(message, worker, first_results):
                        f"Цена: {now[name]['price']}р\n" \
                        f"Ссылка: {now[name]['link']}\n "
                 await message.answer(f'Задача: {name}\n{text}')
-    await message.answer('Сворачиваем слежение..', reply_markup=keyboard_client)
+    await message.answer(
+        'Сворачиваем слежение..',
+        reply_markup=keyboard_client)
 
 
 async def calculate_first_result(user_id, message):
@@ -49,7 +51,10 @@ async def calculate_first_result(user_id, message):
         task = asyncio.create_task(async_avito(url))
         tasks.append(task)
     first_results = dict(zip(names, await asyncio.gather(*tasks)))
-    await message.answer('Запомнили!\nВключаем слежение..', reply_markup=keyboard_short)
+    await message.answer(
+        'Запомнили!\n'
+        'Включаем слежение..',
+        reply_markup=keyboard_short)
     await tracking(message, worker, first_results)
 
 
