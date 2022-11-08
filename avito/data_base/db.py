@@ -43,7 +43,7 @@ def read_data(user_id):
 def delete_data(user_id, worker_name):
     cursor, connection = get_connection()
     try:
-        delete_query = f"DELETE FROM workers WHERE USER_ID = {user_id} AND WORKER_NAME = {worker_name}"
+        delete_query = f"DELETE FROM workers WHERE USER_ID = {user_id} AND WORKER_NAME = '{worker_name}';"
         cursor.execute(delete_query)
         connection.commit()
         return 'Успешное удаление'

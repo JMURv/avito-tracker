@@ -7,4 +7,4 @@ class SetWorker(StatesGroup):
 
 
 class DeleteWorker(StatesGroup):
-    set_worker_name = State()
+    delete_worker_name = State()

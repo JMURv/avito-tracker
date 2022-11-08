@@ -12,14 +12,14 @@ import asyncio
 
 async def calculate_first_result(user_id, message):
     worker = read_data(user_id)
-    message.answer(f'Запоминаем текущее объявление..')
+    await message.answer(f'Запоминаем текущее объявление..')
     tasks = []
     names = list(worker.keys())
     for url in worker.values():
         task = asyncio.create_task(async_avito(url))
         tasks.append(task)
     first_results = dict(zip(names, await asyncio.gather(*tasks)))
-    message.answer('Запомнили!\nВключаем слежение..')
+    await message.answer('Запомнили!\nВключаем слежение..')
     while True:
         sleep(10)
         tasks = []
@@ -57,23 +57,26 @@ async def start_tracking(message: types.Message):
 async def reply_text(message: types.Message):
     if message.text == 'Добавить задачу':
         await set_worker(message)
-    if message.text == 'Остановить задачу':
-        await message.answer('ABOBA')
     if message.text == 'Удалить задачу':
         await delete_worker(message)
-    else:
-        await message.answer('Неправильный запрос')
-        # await message.answer('Успешное удаление')
+
+    if message.text == 'Запустить слежение':
+        await start_tracking(message)
+    if message.text == 'Остановить слежение':
+        await message.answer('ABOBA')
+
+    if message.text == 'Инфо':
+        await send_help(message)
 
 
 @dp.message_handler(commands=['delete_worker'])
 async def delete_worker(message: types.Message):
     """Start deleting a task"""
     await message.answer('Введи имя задачи')
-    await DeleteWorker.set_worker_name.set()
+    await DeleteWorker.delete_worker_name.set()
 
 
-@dp.message_handler(state=DeleteWorker.set_worker_name)
+@dp.message_handler(state=DeleteWorker.delete_worker_name)
 async def delete_name(message: types.Message, state: FSMContext):
     answer = message.text
     await state.update_data(set_worker_name=answer)
@@ -82,10 +85,11 @@ async def delete_name(message: types.Message, state: FSMContext):
 
     db_resp = delete_data(message.from_user.id, worker_name)
     await message.answer(worker_name)
-    await message.answer(db_resp)  # Как-то надо закончить процесс
+    await message.answer(db_resp)
+    await state.finish()
 
 
-@dp.message_handler(commands=['set_new'])
+@dp.message_handler(commands=['new'])
 async def set_worker(message: types.Message):
     """Start adding a task"""
     await message.answer('Введи имя задачи')
@@ -111,7 +115,7 @@ async def get_url(message: types.Message, state: FSMContext):
     url = data.get('set_worker_url')
     await message.answer(f'Добавляем {name} в нашу базу..')
     insert_values(message.from_user.id, f"'{name}'", f"'{url}'")
-    await message.answer(f'Отлично!\nВведите "/start_track", чтобы начать отслеживание или /set_new чтобы добавить еще одно объявление')
+    await message.answer(f'Отлично!\nВведите "/start_track", чтобы начать отслеживание или /new чтобы добавить еще одно объявление')
     await state.finish()
 
 
