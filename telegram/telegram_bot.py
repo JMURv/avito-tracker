@@ -37,6 +37,11 @@ async def calculate_first_result(user_id, message):
     global FLAG
     FLAG = True
     worker = read_data(user_id)
+    if len(worker.keys()) >= 5:
+        return await message.answer(
+            'У Вас 5 или более объявлений!\n'
+            'Запуск невозможен',
+            reply_markup=keyboard_client)
     await message.answer('Запоминаем текущее объявление..')
     tasks = []
     names = list(worker.keys())
