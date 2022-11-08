@@ -1,13 +1,15 @@
-from addons.addons import get_session
 from bs4 import BeautifulSoup
 from time import sleep
 import re
 from arsenic import get_session, browsers, services
+import os
+
 
 CHROMEDRIVER = 'C:\\Users\\DOROTHY\\PycharmProjects\\avito-tracker\\chrome_driver\\chromedriver.exe'
 
 
 async def parse_info(page):
+    avito_url = 'https://www.avito.ru'
     info = {
         'link': '',
         'name': '',
@@ -16,26 +18,30 @@ async def parse_info(page):
         'description': '',
     }
     soup = BeautifulSoup(page, 'html.parser')
-    for link in soup.find_all("div", {'class': re.compile(r'^iva-item-content')}):
+    for link in soup.find_all(
+            "div", {'class': re.compile(r'^iva-item-content')}):
         try:
-            info['description'] = link.find('div', {'class': re.compile(r'^iva-item-text')}).text
-        except:
+            info['description'] = link.find(
+                'div', {'class': re.compile(r'^iva-item-text')}).text
+        except Exception:
             info['description'] = 'Не удалось поучить описание'
         try:
-            info['price'] = link.find('meta', {'itemprop': 'price'})['content']
-        except:
+            info['price'] = link.find(
+                'meta', {'itemprop': 'price'})['content']
+        except Exception:
             info['price'] = 'Не удалось получить цену'
         try:
-            info['link'] = f"https://www.avito.ru{link.find('a', {'itemprop': 'url'})['href']}"
-        except:
+            result = link.find('a', {'itemprop': 'url'})['href']
+            info['link'] = f"{avito_url}{result}"
+        except Exception:
             info['link'] = 'Не удалось получить ссылку'
         try:
             info['name'] = link.find('h3', {'itemprop': 'name'}).text
-        except:
+        except Exception:
             info['name'] = 'Не удалось получить имя'
         try:
             info['img'] = link.findNext('img')['src']
-        except:
+        except Exception:
             info['img'] = 'Не удалось получить картинку'
         break
     return info

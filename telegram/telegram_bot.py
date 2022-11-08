@@ -5,8 +5,8 @@ from initializer import dp
 from keyboards import keyboard_client
 from time import sleep
 from copy import deepcopy
-from avito.avito_tracker import async_avito
-from avito.data_base.db import insert_values, read_data, delete_data
+from avito_tracker import async_avito
+from data_base.db import insert_values, read_data, delete_data
 import asyncio
 
 FLAG = True
@@ -16,7 +16,7 @@ async def calculate_first_result(user_id, message):
     global FLAG
     FLAG = True
     worker = read_data(user_id)
-    await message.answer(f'Запоминаем текущее объявление..')
+    await message.answer('Запоминаем текущее объявление..')
     tasks = []
     names = list(worker.keys())
     for url in worker.values():
@@ -44,12 +44,16 @@ async def calculate_first_result(user_id, message):
 
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
-    await message.answer("Привет!\nЯ бот, который следит за объявлениями за тебя!", reply_markup=keyboard_client)
+    await message.answer("Привет!\n"
+                         "Я бот, который следит за объявлениями за тебя!",
+                         reply_markup=keyboard_client)
 
 
 @dp.message_handler(commands=['help'])
 async def send_help(message: types.Message):
-    await message.answer("У нас всего одно правило - не более 5 объявлений на одного пользователя", reply_markup=keyboard_client)
+    await message.answer("Правила пользования:\n"
+                         "1. Не более 5 объявлений на человека.",
+                         reply_markup=keyboard_client)
 
 
 @dp.message_handler(commands=['start_track'])
@@ -67,16 +71,11 @@ async def reply_text(message: types.Message):
     if message.text == 'Запустить слежение':
         await start_tracking(message)
     if message.text == 'Остановить слежение':
-        await stop_tracking()
+        global FLAG
+        FLAG = False
 
     if message.text == 'Инфо':
         await send_help(message)
-
-
-@dp.message_handler()
-async def stop_tracking():
-    global FLAG
-    FLAG = False
 
 
 @dp.message_handler(commands=['delete_worker'])
@@ -110,7 +109,7 @@ async def set_worker(message: types.Message):
 async def get_name(message: types.Message, state: FSMContext):
     answer = message.text
     await state.update_data(set_worker_name=answer)
-    await message.answer(f'Отправьте URL')
+    await message.answer('Отправьте URL')
     await SetWorker.set_worker_url.set()
 
 
@@ -125,7 +124,9 @@ async def get_url(message: types.Message, state: FSMContext):
     url = data.get('set_worker_url')
     await message.answer(f'Добавляем {name} в нашу базу..')
     insert_values(message.from_user.id, f"'{name}'", f"'{url}'")
-    await message.answer(f'Отлично!\nВведите "/start_track", чтобы начать отслеживание или /new чтобы добавить еще одно объявление')
+    await message.answer('Отлично!\n'
+                         'Введите Запустить слежение, чтобы начать отслеживание\n '
+                         'Добавить задачу, чтобы добавить еще одно объявление')
     await state.finish()
 
 

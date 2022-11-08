@@ -1,5 +1,4 @@
 import psycopg2
-from psycopg2 import Error
 
 
 def get_connection():
@@ -21,7 +20,11 @@ def disconnect(cursor, connection):
 
 def insert_values(user_id, name, url):
     cursor, connection = get_connection()
-    insert_query = f"INSERT INTO workers (USER_ID, WORKER_NAME, URL) VALUES ({user_id}, {name}, {url});"
+    insert_query = f"""
+    INSERT INTO workers
+    (USER_ID, WORKER_NAME, URL)
+    VALUES ({user_id}, {name}, {url});
+    """
     cursor.execute(insert_query)
     connection.commit()
     disconnect(cursor, connection)
@@ -29,7 +32,10 @@ def insert_values(user_id, name, url):
 
 def read_data(user_id):
     cursor, connection = get_connection()
-    read_query = f"SELECT WORKER_NAME, URL FROM workers WHERE USER_ID = {user_id}"
+    read_query = f"""
+    SELECT WORKER_NAME, URL
+    FROM workers
+    WHERE USER_ID = {user_id}"""
     cursor.execute(read_query)
     data = cursor.fetchall()
     result = {}
@@ -43,11 +49,14 @@ def read_data(user_id):
 def delete_data(user_id, worker_name):
     cursor, connection = get_connection()
     try:
-        delete_query = f"DELETE FROM workers WHERE USER_ID = {user_id} AND WORKER_NAME = '{worker_name}';"
+        delete_query = f"""
+        DELETE FROM workers
+        WHERE USER_ID = {user_id}
+        AND WORKER_NAME = '{worker_name}';"""
         cursor.execute(delete_query)
         connection.commit()
         return 'Успешное удаление'
-    except:
+    except Exception:
         return 'Неправильное имя задачи'
     finally:
         disconnect(cursor, connection)
@@ -55,7 +64,10 @@ def delete_data(user_id, worker_name):
 
 def count_data(user_id):
     cursor, connection = get_connection()
-    count_query = f'SELECT COUNT(WORKER_NAME) FROM workers WHERE USER_ID = {user_id};'
+    count_query = f"""
+    SELECT COUNT(WORKER_NAME)
+    FROM workers
+    WHERE USER_ID = {user_id};"""
     cursor.execute(count_query)
     data = cursor.fetchone()[0]
     connection.commit()

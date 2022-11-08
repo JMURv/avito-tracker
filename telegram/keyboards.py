@@ -9,4 +9,5 @@ start_all_tasks = KeyboardButton('Запустить слежение')
 info = KeyboardButton('Инфо')
 
 keyboard_client = ReplyKeyboardMarkup(resize_keyboard=True)
-keyboard_client.row(add_task, delete_task).row(start_all_tasks, stop_all_tasks, info)
+keyboard_client.row(add_task, delete_task)\
+    .row(start_all_tasks, stop_all_tasks, info)
