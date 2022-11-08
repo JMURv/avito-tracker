@@ -2,7 +2,7 @@ from aiogram import executor, types
 from aiogram.dispatcher import FSMContext
 from States import SetWorker, DeleteWorker
 from initializer import dp
-from keyboards import keyboard_client
+from keyboards import keyboard_client, keyboard_short
 from time import sleep
 from copy import deepcopy
 from avito_tracker import async_avito
@@ -10,6 +10,27 @@ from data_base.db import insert_values, read_data, delete_data
 import asyncio
 
 FLAG = True
+
+
+async def tracking(message, worker, first_results):
+    names = list(worker.keys())
+    while FLAG:
+        sleep(10)
+        tasks = []
+        for url in worker.values():
+            task = asyncio.create_task(async_avito(url))
+            tasks.append(task)
+        now = dict(zip(names, await asyncio.gather(*tasks)))
+        for name in names:
+            if now.get(name)['name'] != first_results.get(name)['name']:
+                first_results[name] = deepcopy(now[name])
+                text = f"Обновление!\n\n" \
+                       f"Название: {now[name]['name']}\n" \
+                       f"Описание: {now[name]['description']}\n" \
+                       f"Цена: {now[name]['price']}р\n" \
+                       f"Ссылка: {now[name]['link']}\n "
+                await message.answer(f'Задача: {name}\n{text}')
+    await message.answer('Сворачиваем слежение..', reply_markup=keyboard_client)
 
 
 async def calculate_first_result(user_id, message):
@@ -23,23 +44,8 @@ async def calculate_first_result(user_id, message):
         task = asyncio.create_task(async_avito(url))
         tasks.append(task)
     first_results = dict(zip(names, await asyncio.gather(*tasks)))
-    await message.answer('Запомнили!\nВключаем слежение..')
-    while FLAG:
-        sleep(10)
-        tasks = []
-        for url in worker.values():
-            task = asyncio.create_task(async_avito(url))
-            tasks.append(task)
-        now = dict(zip(names, await asyncio.gather(*tasks)))
-        for name in names:
-            if now.get(name).get('name') != first_results.get(name).get('name'):
-                first_results[name] = deepcopy(now[name])
-                text = f"Обновление!\n\n" \
-                       f"Название: {now[name]['name']}\n" \
-                       f"Описание: {now[name]['description']}\n" \
-                       f"Цена: {now[name]['price']}р\n" \
-                       f"Ссылка: {now[name]['link']}\n "
-                await message.answer(f'Задача: {name}\n{text}')
+    await message.answer('Запомнили!\nВключаем слежение..', reply_markup=keyboard_short)
+    await tracking(message, worker, first_results)
 
 
 @dp.message_handler(commands=['start'])
@@ -125,7 +131,7 @@ async def get_url(message: types.Message, state: FSMContext):
     await message.answer(f'Добавляем {name} в нашу базу..')
     insert_values(message.from_user.id, f"'{name}'", f"'{url}'")
     await message.answer('Отлично!\n'
-                         'Введите Запустить слежение, чтобы начать отслеживание\n '
+                         'Введите Запустить слежение, чтобы начать слежение\n '
                          'Добавить задачу, чтобы добавить еще одно объявление')
     await state.finish()
 

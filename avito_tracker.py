@@ -31,12 +31,14 @@ async def parse_info(page):
         except Exception:
             info['price'] = 'Не удалось получить цену'
         try:
-            result = link.find('a', {'itemprop': 'url'})['href']
+            result = link.find(
+                'a', {'itemprop': 'url'})['href']
             info['link'] = f"{avito_url}{result}"
         except Exception:
             info['link'] = 'Не удалось получить ссылку'
         try:
-            info['name'] = link.find('h3', {'itemprop': 'name'}).text
+            info['name'] = link.find(
+                'h3', {'itemprop': 'name'}).text
         except Exception:
             info['name'] = 'Не удалось получить имя'
         try:
