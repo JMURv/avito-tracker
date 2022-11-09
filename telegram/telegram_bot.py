@@ -8,6 +8,7 @@ from copy import deepcopy
 from avito_tracker import async_avito
 from data_base.db import insert_values, read_data, delete_data
 import asyncio
+from urllib.parse import urlparse
 
 FLAG = True
 
@@ -138,10 +139,14 @@ async def get_url(message: types.Message, state: FSMContext):
     """Finish adding a task"""
     answer = message.text
     await state.update_data(set_worker_url=answer)
-
     data = await state.get_data()
     name = data.get('set_worker_name')
     url = data.get('set_worker_url')
+
+    if urlparse(url).netloc != 'www.avito.ru':
+        await state.finish()
+        return await message.answer('Неправильный URL')
+
     await message.answer(f'Добавляем {name} в нашу базу..')
     insert_values(message.from_user.id, f"'{name}'", f"'{url}'")
     await message.answer('Отлично!\n'
