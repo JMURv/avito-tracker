@@ -13,43 +13,40 @@ FLAG = True
 
 
 async def tracking(message, worker, first_results):
+    global FLAG
+    FLAG = True
     names = list(worker.keys())
+    urls = list(worker.values())
     while FLAG:
-        sleep(10)
-        tasks = []
-        for url in worker.values():
-            task = asyncio.create_task(async_avito(url))
-            tasks.append(task)
+        tasks = list(map(lambda url: asyncio.create_task(async_avito(url)), urls))
         now = dict(zip(names, await asyncio.gather(*tasks)))
         for name in names:
-            if now.get(name)['name'] != first_results.get(name)['name']:
+            task = now.get(name)
+            if task['name'] != first_results.get(name)['name']:
                 first_results[name] = deepcopy(now[name])
                 text = f"Обновление!\n\n" \
-                       f"Название: {now[name]['name']}\n" \
-                       f"Описание: {now[name]['description']}\n" \
-                       f"Цена: {now[name]['price']}р\n" \
-                       f"Ссылка: {now[name]['link']}\n "
+                       f"Название: {task['name']}\n" \
+                       f"Описание: {task['description']}\n" \
+                       f"Цена: {task['price']}р\n" \
+                       f"Ссылка: {task['link']}\n "
                 await message.answer(f'Задача: {name}\n{text}')
+        sleep(10)
     await message.answer(
         'Сворачиваем слежение..',
         reply_markup=keyboard_client)
 
 
 async def calculate_first_result(user_id, message):
-    global FLAG
-    FLAG = True
     worker = read_data(user_id)
-    if len(worker.keys()) >= 5:
+    if len(worker.keys()) > 5:
         return await message.answer(
-            'У Вас 5 или более объявлений!\n'
+            'У Вас более 5 объявлений! --> '
             'Запуск невозможен',
             reply_markup=keyboard_client)
     await message.answer('Запоминаем текущее объявление..')
-    tasks = []
+    urls = list(worker.values())
     names = list(worker.keys())
-    for url in worker.values():
-        task = asyncio.create_task(async_avito(url))
-        tasks.append(task)
+    tasks = list(map(lambda url: asyncio.create_task(async_avito(url)), urls))
     first_results = dict(zip(names, await asyncio.gather(*tasks)))
     await message.answer(
         'Запомнили!\n'
@@ -67,8 +64,15 @@ async def send_welcome(message: types.Message):
 
 @dp.message_handler(commands=['help'])
 async def send_help(message: types.Message):
-    await message.answer("Правила пользования:\n"
-                         "1. Не более 5 объявлений на человека.",
+    await message.answer("FAQ:\n"
+                         "1. Сколько я могу завести объявлений?\n"
+                         "Ответ: Не более 5 объявлений.\n\n"
+                         "2. Какая ссылка требуется для трекинга?\n"
+                         "Ответ: Ссылка из поиска авито. "
+                         "Можно настраивать всё, что предлагает сервис: "
+                         "цену, сортировку, доставку и тд.\n\n"
+                         "Предупреждение:\n"
+                         "Остановка слежения может иметь задержку.",
                          reply_markup=keyboard_client)
 
 
@@ -90,7 +94,7 @@ async def reply_text(message: types.Message):
         global FLAG
         FLAG = False
 
-    if message.text == 'Инфо':
+    if message.text == 'FAQ':
         await send_help(message)
 
 
@@ -109,12 +113,11 @@ async def delete_name(message: types.Message, state: FSMContext):
     worker_name = data.get('set_worker_name')
 
     db_resp = delete_data(message.from_user.id, worker_name)
-    await message.answer(worker_name)
     await message.answer(db_resp)
     await state.finish()
 
 
-@dp.message_handler(commands=['new'])
+@dp.message_handler(commands=['new'], state="*")
 async def set_worker(message: types.Message):
     """Start adding a task"""
     await message.answer('Введи имя задачи')
@@ -141,7 +144,7 @@ async def get_url(message: types.Message, state: FSMContext):
     await message.answer(f'Добавляем {name} в нашу базу..')
     insert_values(message.from_user.id, f"'{name}'", f"'{url}'")
     await message.answer('Отлично!\n'
-                         'Введите Запустить слежение, чтобы начать слежение\n '
+                         'Введите /start_track, чтобы начать слежение\n '
                          'Добавить задачу, чтобы добавить еще одно объявление')
     await state.finish()
 

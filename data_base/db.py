@@ -55,9 +55,9 @@ def delete_data(user_id, worker_name):
         AND WORKER_NAME = '{worker_name}';"""
         cursor.execute(delete_query)
         connection.commit()
-        return 'Успешное удаление'
+        return f'Успешное удаление {worker_name}'
     except Exception:
-        return 'Неправильное имя задачи'
+        return f'Неправильное имя задачи {worker_name}'
     finally:
         disconnect(cursor, connection)
 

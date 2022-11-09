@@ -6,7 +6,7 @@ delete_task = KeyboardButton('Удалить задачу')
 stop_all_tasks = KeyboardButton('Остановить слежение')
 start_all_tasks = KeyboardButton('Запустить слежение')
 
-info = KeyboardButton('Инфо')
+info = KeyboardButton('FAQ')
 
 keyboard_client = ReplyKeyboardMarkup(resize_keyboard=True)
 keyboard_client.row(add_task, delete_task)\
