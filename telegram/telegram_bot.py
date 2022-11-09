@@ -18,7 +18,8 @@ async def tracking(message, worker, first_results):
     names = list(worker.keys())
     urls = list(worker.values())
     while FLAG:
-        tasks = list(map(lambda url: asyncio.create_task(async_avito(url)), urls))
+        tasks = list(map(
+            lambda url: asyncio.create_task(async_avito(url)), urls))
         now = dict(zip(names, await asyncio.gather(*tasks)))
         for name in names:
             task = now.get(name)
@@ -46,7 +47,8 @@ async def calculate_first_result(user_id, message):
     await message.answer('Запоминаем текущее объявление..')
     urls = list(worker.values())
     names = list(worker.keys())
-    tasks = list(map(lambda url: asyncio.create_task(async_avito(url)), urls))
+    tasks = list(map(
+        lambda url: asyncio.create_task(async_avito(url)), urls))
     first_results = dict(zip(names, await asyncio.gather(*tasks)))
     await message.answer(
         'Запомнили!\n'
@@ -57,8 +59,10 @@ async def calculate_first_result(user_id, message):
 
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
-    await message.answer("Привет!\n"
-                         "Я бот, который следит за объявлениями за тебя!",
+    await message.answer("Привет 👋\n"
+                         "Я бот, который следит за объявлениями за тебя!\n"
+                         "Прочитай правила и FAQ перед использованием:"
+                         " /help",
                          reply_markup=keyboard_client)
 
 
@@ -83,19 +87,16 @@ async def start_tracking(message: types.Message):
 
 @dp.message_handler()
 async def reply_text(message: types.Message):
-    if message.text == 'Добавить задачу':
+    if message.text == '✅ Добавить задачу':
         await set_worker(message)
-    if message.text == 'Удалить задачу':
+    if message.text == '❌ Удалить задачу':
         await delete_worker(message)
 
-    if message.text == 'Запустить слежение':
+    if message.text == '📡 Запустить слежение':
         await start_tracking(message)
-    if message.text == 'Остановить слежение':
+    if message.text == '⚠ Остановить слежение':
         global FLAG
         FLAG = False
-
-    if message.text == 'FAQ':
-        await send_help(message)
 
 
 @dp.message_handler(commands=['delete_worker'])
