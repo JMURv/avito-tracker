@@ -3,11 +3,11 @@ import psycopg2
 
 def get_connection():
     connection = psycopg2.connect(
-        user="postgres",
-        password="794613825Zx!",
-        host="127.0.0.1",
+        user="d6b8k9ium6edr8",
+        password="1c601a8274218059c21b51c002e90d8a69996dd335f745e9e8f2c42e5c8240cb",
+        host="ec2-52-18-116-67.eu-west-1.compute.amazonaws.com",
         port="5432",
-        database="postgres"
+        database="d6b8k9ium6edr8"
     )
     cursor = connection.cursor()
     return cursor, connection
