@@ -45,7 +45,8 @@ async def calculate_first_result(user_id, message):
             'У Вас более 5 объявлений! --> '
             'Запуск невозможен',
             reply_markup=keyboard_client)
-    await message.answer('Запоминаем текущее объявление..')
+    await message.answer('Запоминаем текущее объявление..',
+                         reply_markup=keyboard_short)
     urls = list(worker.values())
     names = list(worker.keys())
     tasks = list(map(
@@ -53,8 +54,7 @@ async def calculate_first_result(user_id, message):
     first_results = dict(zip(names, await asyncio.gather(*tasks)))
     await message.answer(
         'Запомнили!\n'
-        'Включаем слежение..',
-        reply_markup=keyboard_short)
+        'Включаем слежение..')
     await tracking(message, worker, first_results)
 
 
@@ -75,7 +75,9 @@ async def send_help(message: types.Message):
                          "2. Какая ссылка требуется для трекинга?\n"
                          "Ответ: Ссылка из поиска авито. "
                          "Можно настраивать всё, что предлагает сервис: "
-                         "цену, сортировку, доставку и тд.\n\n"
+                         "цену, доставку и тд.\n"
+                         "Главное, что Вам нужно сделать - "
+                         "установить сортировку по дате.\n\n"
                          "Предупреждение:\n"
                          "Остановка слежения может иметь задержку.",
                          reply_markup=keyboard_client)
