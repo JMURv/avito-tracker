@@ -1,5 +1,3 @@
-import os
-
 from aiogram import executor, types
 from aiogram.dispatcher import FSMContext
 from States import SetWorker, DeleteWorker
