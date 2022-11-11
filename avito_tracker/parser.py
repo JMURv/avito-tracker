@@ -2,11 +2,12 @@ from bs4 import BeautifulSoup
 from time import sleep
 import re
 from arsenic import get_session, browsers, services
-# import logging
-# logging.getLogger('WDM').setLevel(logging.NOTSET)
+import sys
 
-
-CHROMEDRIVER = 'avito_tracker/chrome_driver/chromedriver.exe'
+if sys.platform.startswith('win'):
+    CHROMEDRIVER = 'avito_tracker/chrome_driver/chromedriver.exe'
+else:
+    CHROMEDRIVER = 'avito_tracker/chrome_driver/chromedriver'
 
 
 async def parse_info(page):
