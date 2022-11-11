@@ -3,9 +3,7 @@ from time import sleep
 import re
 from arsenic import get_session, browsers, services
 
-root = 'C:\\Users\\DOROTHY\\PycharmProjects\\avito-tracker'
-driver_path = '\\chrome_driver\\chromedriver.exe'
-CHROMEDRIVER = root + driver_path
+CHROMEDRIVER = 'avito_tracker/chrome_driver/chromedriver.exe'
 
 
 async def parse_info(page):

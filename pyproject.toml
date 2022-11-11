@@ -10,6 +10,7 @@ aiogram = "^2.23.1"
 psycopg2 = "^2.9.5"
 arsenic = "^21.8"
 beautifulsoup4 = "^4.11.1"
+asyncio = "^3.4.3"
 
 [tool.poetry.dev-dependencies]
 
