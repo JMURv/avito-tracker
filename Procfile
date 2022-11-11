@@ -1,1 +1,1 @@
-bot: python telegram/telegram_bot.py
+bot: python avito_tracker/telegram_bot.py

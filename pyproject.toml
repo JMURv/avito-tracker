@@ -1,19 +1,17 @@
 [tool.poetry]
-name = "avito_tracker"
+name = "avito-tracker"
 version = "0.1.0"
 description = ""
 authors = ["JMURv <architect.lock@outlook.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
+aiogram = "^2.23.1"
+psycopg2 = "^2.9.5"
 arsenic = "^21.8"
 beautifulsoup4 = "^4.11.1"
-psycopg2 = "^2.9.5"
-aiogram = "^2.23.1"
-asyncio = "^3.4.3"
 
 [tool.poetry.dev-dependencies]
-flake8 = "^5.0.4"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
