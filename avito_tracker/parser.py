@@ -2,6 +2,9 @@ from bs4 import BeautifulSoup
 from time import sleep
 import re
 from arsenic import get_session, browsers, services
+# import logging
+# logging.getLogger('WDM').setLevel(logging.NOTSET)
+
 
 CHROMEDRIVER = 'avito_tracker/chrome_driver/chromedriver.exe'
 
