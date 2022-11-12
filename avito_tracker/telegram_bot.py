@@ -1,13 +1,13 @@
+import asyncio
 from aiogram import executor, types
 from aiogram.dispatcher import FSMContext
-from avito_tracker.telegram.States import SetWorker, DeleteWorker
-from avito_tracker.telegram.initializer import dp
-from avito_tracker.telegram.keyboards import keyboard_client, keyboard_short
+from telegram.States import SetWorker, DeleteWorker
+from telegram.initializer import dp
+from telegram.keyboards import keyboard_client, keyboard_short
 from time import sleep
 from copy import deepcopy
 from avito_tracker.parser import async_avito
 from data_base.db import insert_values, read_data, delete_data
-import asyncio
 from urllib.parse import urlparse
 
 FLAG = True

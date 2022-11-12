@@ -54,6 +54,21 @@ async def parse_info(page):
 async def async_avito(url):
     service = services.Chromedriver(binary=CHROMEDRIVER)
     browser = browsers.Chrome()
+    browser.capabilities = {
+        "goog:chromeOptions": {
+            "args":
+                [
+                    "--headless",
+                    "--disable-in-process-stack-traces",
+                    # "--disable-gpu",
+                    # "--no-sandbox",
+                    # "--disable-setuid-sandbox",
+                    # "--disable-dev-shm-usage",
+                    # "--remote-debugging-port=5432",
+
+                ]
+        }
+    }
     async with get_session(service, browser) as driver:
         await driver.get(url)
         sleep(2)

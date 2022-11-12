@@ -3,3 +3,4 @@ probe.py
 __pycache__
 .env
 .venv/
+dist
