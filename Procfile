@@ -1,1 +1,0 @@
-bot: python avito_tracker/telegram_bot.py

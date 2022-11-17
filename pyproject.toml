@@ -11,6 +11,7 @@ psycopg2 = "^2.9.5"
 arsenic = "^21.8"
 beautifulsoup4 = "^4.11.1"
 asyncio = "^3.4.3"
+python-dotenv = "^0.21.0"
 
 [tool.poetry.dev-dependencies]
 

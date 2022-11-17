@@ -12,6 +12,7 @@ else:
 
 async def parse_info(page):
     avito_url = 'https://www.avito.ru'
+    max_words = 500
     info = {
         'link': '',
         'name': '',
@@ -23,8 +24,12 @@ async def parse_info(page):
     for link in soup.find_all(
             "div", {'class': re.compile(r'^iva-item-content')}):
         try:
-            info['description'] = link.find(
+            result = link.find(
                 'div', {'class': re.compile(r'^iva-item-text')}).text
+            if len(result) > max_words:
+                info['description'] = f"{result[:max_words]}..."
+            else:
+                info['description'] = result
         except Exception:
             info['description'] = 'Не удалось поучить описание'
         try:
