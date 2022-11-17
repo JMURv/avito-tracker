@@ -7,7 +7,7 @@ import sys
 if sys.platform.startswith('win'):
     CHROMEDRIVER = 'avito_tracker/chrome_driver/chromedriver.exe'
 else:
-    CHROMEDRIVER = '/root/Projects/avito-tracker/avito_tracker/chrome_driver/chromedriver'
+    CHROMEDRIVER = 'avito_tracker/chrome_driver/chromedriver'
 
 
 async def parse_info(page):
@@ -63,13 +63,13 @@ async def async_avito(url):
         "goog:chromeOptions": {
             "args":
                 [
-                    # "--headless",
-                    # "--disable-gpu",
-                    # "--no-sandbox",
-                    # "--disable-setuid-sandbox",
-                    # "--disable-dev-shm-usage",
-                    # "--disable-in-process-stack-traces",
-                    # "--remote-debugging-port=9222"
+                    "--headless",
+                    "--disable-gpu",
+                    "--no-sandbox",
+                    "--disable-setuid-sandbox",
+                    "--disable-dev-shm-usage",
+                    "--disable-in-process-stack-traces",
+                    "--remote-debugging-port=9222"
                 ]
         }
     }

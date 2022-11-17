@@ -34,7 +34,7 @@ async def tracking(message, worker, first_results):
                        f"Описание: {task['description']}\n\n" \
                        f"Ссылка: {task['link']}\n\n"
                 await message.answer(f'Задача: {name}\n\n{text}')
-        await asyncio.sleep(10)
+        await asyncio.sleep(600)
     await message.answer(
         'Сворачиваем слежение..',
         reply_markup=keyboard_client)
