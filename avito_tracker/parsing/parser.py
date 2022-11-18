@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from time import sleep
+import asyncio
 import re
 from arsenic import get_session, browsers, services
 import sys
@@ -12,7 +12,7 @@ else:
 
 async def parse_info(page):
     avito_url = 'https://www.avito.ru'
-    max_words = 500
+    max_words = 50
     info = {
         'link': '',
         'name': '',
@@ -26,8 +26,8 @@ async def parse_info(page):
         try:
             result = link.find(
                 'div', {'class': re.compile(r'^iva-item-text')}).text
-            if len(result) > max_words:
-                info['description'] = f"{result[:max_words]}..."
+            if len(result.split(' ')) > max_words:
+                info['description'] = f"{result.split(' ')[:max_words]}..."
             else:
                 info['description'] = result
         except Exception:
@@ -75,7 +75,7 @@ async def async_avito(url):
     }
     async with get_session(service, browser) as driver:
         await driver.get(url)
-        sleep(2)
+        await asyncio.sleep(2)
         html = await driver.get_page_source()
         new_data = await parse_info(html)
         return new_data

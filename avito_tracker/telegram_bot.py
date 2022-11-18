@@ -10,16 +10,17 @@ from telegram.keyboards import keyboard_client, keyboard_short
 
 from parsing.parser import async_avito
 from data_base.crud import insert_values, read_data, delete_data
-from data_base.tracking import is_tracking_now, disable_track, register_user, enable_track
+from data_base.tracking import is_tracking_now, disable_track,\
+    register_user, enable_track
 
 
 async def tracking(message, worker, first_results):
     user_id = message.from_user.id
-    enable_track(user_id)
+    await enable_track(user_id)
     names = list(worker.keys())
     urls = list(worker.values())
     while True:
-        if is_tracking_now(user_id) == 0:
+        if await is_tracking_now(user_id) == 0:
             break
         tasks = list(map(
             lambda url: asyncio.create_task(async_avito(url)), urls))
@@ -54,7 +55,7 @@ async def worker_validator(message, worker):
 
 
 async def calculate_first_result(user_id, message):
-    worker = read_data(user_id)
+    worker = await read_data(user_id)
     await worker_validator(message, worker)
     await message.answer('Запоминаем текущее объявление..',
                          reply_markup=keyboard_short)
@@ -71,7 +72,7 @@ async def calculate_first_result(user_id, message):
 
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
-    is_registered = register_user(message.from_user.id)
+    is_registered = await register_user(message.from_user.id)
     if not is_registered:
         await message.answer("Привет 👋\n"
                              "Я бот, который следит за объявлениями за тебя!\n"
@@ -116,8 +117,10 @@ async def reply_text(message: types.Message):
     if message.text == '📡 Запустить слежение':
         await start_tracking(message)
     if message.text == '⚠ Остановить слежение':
-        await message.answer('Это может занять какое-то время')
-        disable_track(message.from_user.id)
+        await message.answer('Это может занять какое-то время..')
+        await disable_track(message.from_user.id)
+        await message.answer('Готово!',
+                             reply_markup=keyboard_client)
 
 
 @dp.message_handler(commands=['delete_worker'])
@@ -134,7 +137,7 @@ async def delete_name(message: types.Message, state: FSMContext):
     data = await state.get_data()
     worker_name = data.get('set_worker_name')
 
-    db_resp = delete_data(message.from_user.id, worker_name)
+    db_resp = await delete_data(message.from_user.id, worker_name)
     await message.answer(db_resp)
     await state.finish()
 
@@ -163,16 +166,24 @@ async def get_url(message: types.Message, state: FSMContext):
     name = data.get('set_worker_name')
     url = data.get('set_worker_url')
 
-    if urlparse(url).netloc != 'www.avito.ru':
+    if not url_validator(url):
         await state.finish()
         return await message.answer('Неправильный URL')
 
     await message.answer(f'Добавляем {name} в нашу базу..')
-    insert_values(message.from_user.id, f"'{name}'", f"'{url}'")
+    await insert_values(message.from_user.id, f"'{name}'", f"'{url}'")
     await message.answer('Отлично!\n'
                          'Введите /start_track, чтобы начать слежение\n '
                          'Добавить задачу, чтобы добавить еще одно объявление')
     await state.finish()
+
+
+async def url_validator(url):
+    if type(url) is not str:
+        return False
+    if urlparse(url).netloc not in ('www.avito.ru', 'm.avito.ru'):
+        return False
+    return True
 
 
 if __name__ == '__main__':

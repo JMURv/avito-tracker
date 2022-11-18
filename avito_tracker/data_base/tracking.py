@@ -1,57 +1,53 @@
-from psycopg2 import errors
-from avito_tracker.data_base.connection import get_connection, disconnect
+from avito_tracker.data_base.config import DSN
+from asyncpg import exceptions
+import asyncpg
 
 
-def register_user(user_id):
+async def register_user(user_id):
+    conn = await asyncpg.connect(DSN)
     is_registered = False
-    cursor, connection = get_connection()
     try:
         reg_query = f"""
             INSERT INTO users
             (user_id, is_tracking)
             VALUES ({user_id}, {0});
             """
-        cursor.execute(reg_query)
-        connection.commit()
-    except errors.UniqueViolation:
+        await conn.execute(reg_query)
+    except exceptions.UniqueViolationError:
         is_registered = True
     finally:
-        disconnect(cursor, connection)
+        await conn.close()
         return is_registered
 
 
-def is_tracking_now(user_id):
-    cursor, connection = get_connection()
+async def is_tracking_now(user_id):
+    conn = await asyncpg.connect(DSN)
     query = f"""
     SELECT is_tracking
     FROM users
     WHERE user_id = {user_id};"""
-    cursor.execute(query)
-    data = cursor.fetchone()[0]
-    connection.commit()
-    disconnect(cursor, connection)
+    data = await conn.fetchval(query)
+    await conn.close()
     return data
 
 
-def enable_track(user_id):
-    cursor, connection = get_connection()
-    insert_query = f"""
+async def enable_track(user_id):
+    conn = await asyncpg.connect(DSN)
+    update_query = f"""
         UPDATE users
         SET is_tracking = 1
         WHERE user_id = {user_id};
         """
-    cursor.execute(insert_query)
-    connection.commit()
-    disconnect(cursor, connection)
+    await conn.execute(update_query)
+    await conn.close()
 
 
-def disable_track(user_id):
-    cursor, connection = get_connection()
+async def disable_track(user_id):
+    conn = await asyncpg.connect(DSN)
     insert_query = f"""
     UPDATE users
     SET is_tracking = 0
     WHERE user_id = {user_id};
     """
-    cursor.execute(insert_query)
-    connection.commit()
-    disconnect(cursor, connection)
+    await conn.execute(insert_query)
+    await conn.close()
