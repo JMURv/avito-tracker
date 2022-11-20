@@ -6,10 +6,11 @@ from aiogram import executor, types
 from aiogram.dispatcher import FSMContext
 from telegram.States import SetWorker, DeleteWorker
 from telegram.initializer import dp
-from telegram.keyboards import keyboard_client, keyboard_short
+from telegram.keyboards import keyboard_client, keyboard_short, inline_kb
+from aiogram.utils.exceptions import PhotoAsInputFileRequired
 
 from parsing.parser import async_avito
-from data_base.crud import insert_values, read_data, delete_data
+from data_base.crud import insert_values, read_data, delete_data, check_workers
 from data_base.tracking import is_tracking_now, disable_track,\
     register_user, enable_track
 
@@ -29,16 +30,25 @@ async def tracking(message, worker, first_results):
             task = now.get(name)
             if task['name'] != first_results.get(name)['name']:
                 first_results[name] = deepcopy(now[name])
-                text = f"Обновление!\n\n" \
+                inline = await inline_kb(task['link'])
+                text = f"Обновление для {name}!\n\n" \
                        f"Название: {task['name']}\n\n" \
                        f"Цена: {task['price']}р\n\n" \
-                       f"Описание: {task['description']}\n\n" \
-                       f"Ссылка: {task['link']}\n\n"
-                await message.answer(f'Задача: {name}\n\n{text}')
+                       f"Описание: {task['description']}\n\n"
+                try:
+                    await dp.bot.send_photo(
+                        chat_id=user_id,
+                        photo=f"{task['img']}",
+                        caption=text,
+                        reply_markup=inline
+                    )
+                except PhotoAsInputFileRequired:
+                    await dp.bot.send_message(
+                        chat_id=user_id,
+                        text=f'Задача: {name}\n\n{text}',
+                        reply_markup=inline
+                    )
         await asyncio.sleep(600)
-    await message.answer(
-        'Сворачиваем слежение..',
-        reply_markup=keyboard_client)
 
 
 async def worker_validator(message, worker):
@@ -54,7 +64,9 @@ async def worker_validator(message, worker):
             reply_markup=keyboard_client)
 
 
-async def calculate_first_result(user_id, message):
+@dp.message_handler(commands=['start_track'])
+async def calculate_first_result(message):
+    user_id = message.from_user.id
     worker = await read_data(user_id)
     await worker_validator(message, worker)
     await message.answer('Запоминаем текущее объявление..',
@@ -102,20 +114,19 @@ async def send_help(message: types.Message):
                          reply_markup=keyboard_client)
 
 
-@dp.message_handler(commands=['start_track'])
-async def start_tracking(message: types.Message):
-    await calculate_first_result(message.from_user.id, message)
-
-
 @dp.message_handler()
 async def reply_text(message: types.Message):
     if message.text == '✅ Добавить задачу':
         await set_worker(message)
     if message.text == '❌ Удалить задачу':
         await delete_worker(message)
+    if message.text == '📋 Мои задачи':
+        tasks = await check_workers(message.from_user.id)
+        await message.answer(f"Ваши задачи: {tasks}",
+                             reply_markup=keyboard_client)
 
     if message.text == '📡 Запустить слежение':
-        await start_tracking(message)
+        await calculate_first_result(message)
     if message.text == '⚠ Остановить слежение':
         await message.answer('Это может занять какое-то время..')
         await disable_track(message.from_user.id)

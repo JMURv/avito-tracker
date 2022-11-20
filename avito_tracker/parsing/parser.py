@@ -12,7 +12,7 @@ else:
 
 async def parse_info(page):
     avito_url = 'https://www.avito.ru'
-    max_words = 50
+    max_words = 40
     info = {
         'link': '',
         'name': '',
@@ -27,7 +27,8 @@ async def parse_info(page):
             result = link.find(
                 'div', {'class': re.compile(r'^iva-item-text')}).text
             if len(result.split(' ')) > max_words:
-                info['description'] = f"{result.split(' ')[:max_words]}..."
+                new = ' '.join(result.split(' ')[:max_words])
+                info['description'] = f"{new}..."
             else:
                 info['description'] = result
         except Exception:
