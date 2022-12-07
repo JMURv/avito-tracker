@@ -1,5 +1,4 @@
 import asyncio
-from copy import deepcopy
 from urllib.parse import urlparse
 
 from aiogram import executor, types
@@ -11,11 +10,11 @@ from aiogram.utils.exceptions import PhotoAsInputFileRequired
 
 from parsing.parser import async_avito
 from data_base.crud import insert_values, read_data, delete_data, check_workers
-from data_base.tracking import is_tracking_now, disable_track,\
-    register_user, enable_track
+from data_base.tracking import is_tracking_now, disable_track, \
+    register_user, enable_track, register_first_result, check_first_result, update_result, kill_session, check_if_exists
 
 
-async def tracking(message, worker, first_results):
+async def tracking(message, worker):
     user_id = message.from_user.id
     await enable_track(user_id)
     names = list(worker.keys())
@@ -28,8 +27,9 @@ async def tracking(message, worker, first_results):
         now = dict(zip(names, await asyncio.gather(*tasks)))
         for name in names:
             task = now.get(name)
-            if task['name'] != first_results.get(name)['name']:
-                first_results[name] = deepcopy(now[name])
+            first_result = await check_first_result(user_id, name)
+            if task['name'] != first_result:
+                await update_result(user_id, name, task['name'])
                 inline = await inline_kb(task['link'])
                 text = f"Обновление для {name}!\n\n" \
                        f"Название: {task['name']}\n\n" \
@@ -62,6 +62,10 @@ async def worker_validator(message, worker):
             'У Вас более 5 объявлений! --> '
             'Запуск невозможен',
             reply_markup=keyboard_client)
+    if await check_if_exists(message.from_user.id):
+        await message.answer('Нашёл у Вас активные объявления, перезапуск...',
+                             reply_markup=keyboard_short)
+        return await tracking(message, worker)
 
 
 @dp.message_handler(commands=['start_track'])
@@ -76,10 +80,12 @@ async def calculate_first_result(message):
     tasks = list(map(
         lambda url: asyncio.create_task(async_avito(url)), urls))
     first_results = dict(zip(names, await asyncio.gather(*tasks)))
+    for task in names:
+        await register_first_result(user_id, task, first_results[task]['name'])
     await message.answer(
         'Запомнили!\n'
         'Включаем слежение..')
-    await tracking(message, worker, first_results)
+    await tracking(message, worker)
 
 
 @dp.message_handler(commands=['start'])
@@ -130,6 +136,7 @@ async def reply_text(message: types.Message):
     if message.text == '⚠ Остановить слежение':
         await message.answer('Это может занять какое-то время..')
         await disable_track(message.from_user.id)
+        await kill_session(message.from_user.id)
         await message.answer('Готово!',
                              reply_markup=keyboard_client)
 
