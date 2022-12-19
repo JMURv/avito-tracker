@@ -76,7 +76,7 @@ async def async_avito(url):
     }
     async with get_session(service, browser) as driver:
         await driver.get(url)
-        await asyncio.sleep(2)
+        await asyncio.sleep(3)
         html = await driver.get_page_source()
         new_data = await parse_info(html)
         return new_data

@@ -1,5 +1,3 @@
-import asyncio
-
 from avito_tracker.data_base.config import DSN
 from asyncpg import exceptions
 import asyncpg
@@ -38,15 +36,6 @@ async def update_result(user_id, task_name, new_name):
     AND task_name = '{task_name}'
     """
     await conn.execute(update_query)
-    await conn.close()
-
-
-async def kill_session(user_id):
-    conn = await asyncpg.connect(DSN)
-    delete_query = f"""
-    DELETE FROM results
-    WHERE USER_ID = {user_id};"""
-    await conn.execute(delete_query)
     await conn.close()
 
 
@@ -108,5 +97,9 @@ async def disable_track(user_id):
     SET is_tracking = 0
     WHERE user_id = {user_id};
     """
+    delete_query = f"""
+    DELETE FROM results
+    WHERE USER_ID = {user_id};"""
     await conn.execute(insert_query)
+    await conn.execute(delete_query)
     await conn.close()
