@@ -4,11 +4,11 @@ from telegram.States import SetWorker, DeleteWorker
 from telegram.initializer import dp
 from telegram.keyboards import keyboard_client
 
-from data_base.crud import insert_values, delete_data, check_workers
+from data_base.crud import insert_values, delete_data, check_workers, read_data
 from data_base.tracking import disable_track, register_user
 
 from validators import url_validator
-from tracking import calculate_first_result
+from tracking import worker_checker
 
 
 @dp.message_handler(commands=['start'])
@@ -55,7 +55,7 @@ async def reply_text(message: types.Message):
                              reply_markup=keyboard_client)
 
     if message.text == '📡 Запустить слежение':
-        await calculate_first_result(message)
+        await worker_checker(message, await read_data(message.from_user.id))
     if message.text == '⚠ Остановить слежение':
         await message.answer('Это может занять какое-то время..')
         await disable_track(message.from_user.id)
@@ -78,6 +78,7 @@ async def delete_name(message: types.Message, state: FSMContext):
     worker_name = data.get('set_worker_name')
 
     db_resp = await delete_data(message.from_user.id, worker_name)
+    await disable_track(message.from_user.id)
     await message.answer(db_resp)
     await state.finish()
 
@@ -106,7 +107,7 @@ async def get_url(message: types.Message, state: FSMContext):
     name = data.get('set_worker_name')
     url = data.get('set_worker_url')
 
-    if not url_validator(url):
+    if not await url_validator(url):
         await state.finish()
         return await message.answer('Неправильный URL')
 
