@@ -1,7 +1,7 @@
 import asyncio
+from avito_tracker.data_base.crud import read_data
 from parsing.parser import async_avito
 from aiogram import types
-from aiogram.utils.exceptions import PhotoAsInputFileRequired
 from telegram.initializer import dp
 from telegram.keyboards import keyboard_short, inline_kb, keyboard_client
 
@@ -41,37 +41,36 @@ async def start_tracking(message: types.Message, worker: dict):
                         caption=text,
                         reply_markup=inline
                     )
-                except PhotoAsInputFileRequired:
+                except Exception:
                     await dp.bot.send_message(
                         chat_id=user_id,
                         text=f'Задача: {name}\n\n{text}',
                         reply_markup=inline
                     )
-        await asyncio.sleep(10)
+        await asyncio.sleep(600)
     return 0
 
 
-@dp.message_handler(commands=['start_track'])
 async def calculate_first_result(message: types.Message, worker: dict):
     user_id = message.from_user.id
+    urls, names = list(worker.values()), list(worker.keys())
     await message.answer('Запоминаем текущее объявление..',
                          reply_markup=keyboard_short)
-    urls = list(worker.values())
-    names = list(worker.keys())
+
     tasks = list(map(
-        lambda url: asyncio.create_task(async_avito(url)), urls))
+        lambda url: asyncio.create_task(async_avito(url)), urls)
+    )
     first_results = dict(zip(names, await asyncio.gather(*tasks)))
     for task in names:
         await register_first_result(user_id, task, first_results[task]['name'])
     await message.answer(
         'Запомнили!\n'
         'Включаем слежение..')
-    loop = asyncio.get_event_loop()
-    new_task = loop.create_task(start_tracking(message, worker))
-    loop.run_until_complete(new_task)
+    asyncio.run(start_tracking(message, worker))
 
 
-async def worker_checker(message: types.Message, worker):
+async def worker_checker(message: types.Message):
+    worker = await read_data(message.from_user.id)
     if len(worker.keys()) == 0:
         return await message.answer(
             'У Вас нет ни одного объявления --> '
@@ -85,8 +84,6 @@ async def worker_checker(message: types.Message, worker):
     if await check_if_exists(message.from_user.id):
         await message.answer('Нашёл у Вас активные объявления, перезапуск...',
                              reply_markup=keyboard_short)
-        loop = asyncio.get_event_loop()
-        new_task = loop.create_task(start_tracking(message, worker))
-        return loop.run_until_complete(new_task)
-    return await calculate_first_result(message, worker)
-
+        asyncio.run(start_tracking(message, worker))
+    else:
+        return await calculate_first_result(message, worker)

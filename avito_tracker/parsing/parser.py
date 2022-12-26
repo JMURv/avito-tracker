@@ -3,6 +3,7 @@ import asyncio
 import re
 from arsenic import get_session, browsers, services
 import sys
+import os
 
 if sys.platform.startswith('win'):
     CHROMEDRIVER = 'avito_tracker/chrome_driver/chromedriver.exe'
@@ -10,7 +11,7 @@ else:
     CHROMEDRIVER = 'avito_tracker/chrome_driver/chromedriver'
 
 
-async def parse_info(page):
+async def parse_info(page: str) -> dict:
     avito_url = 'https://www.avito.ru'
     max_words = 40
     info = {
@@ -57,20 +58,20 @@ async def parse_info(page):
     return info
 
 
-async def async_avito(url):
-    service = services.Chromedriver(binary=CHROMEDRIVER)
+async def async_avito(url: str) -> dict:
+    service = services.Chromedriver(binary=CHROMEDRIVER, log_file=os.devnull)
     browser = browsers.Chrome()
     browser.capabilities = {
         "goog:chromeOptions": {
             "args":
                 [
-                    # "--headless",
-                    # "--disable-gpu",
-                    # "--no-sandbox",
-                    # "--disable-setuid-sandbox",
-                    # "--disable-dev-shm-usage",
-                    # "--disable-in-process-stack-traces",
-                    # "--remote-debugging-port=9222"
+                    "--headless",
+                    "--disable-gpu",
+                    "--no-sandbox",
+                    "--disable-setuid-sandbox",
+                    "--disable-dev-shm-usage",
+                    "--disable-in-process-stack-traces",
+                    "--remote-debugging-port=9222"
                 ]
         }
     }

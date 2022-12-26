@@ -4,7 +4,7 @@ from telegram.States import SetWorker, DeleteWorker
 from telegram.initializer import dp
 from telegram.keyboards import keyboard_client
 
-from data_base.crud import insert_values, delete_data, check_workers, read_data
+from data_base.crud import insert_values, delete_data, check_workers
 from data_base.tracking import disable_track, register_user
 
 from validators import url_validator
@@ -45,17 +45,16 @@ async def send_help(message: types.Message):
 
 @dp.message_handler()
 async def reply_text(message: types.Message):
-    if message.text == '✅ Добавить задачу':
+    if message.text in ('✅ Добавить задачу', '/add'):
         await set_worker(message)
-    if message.text == '❌ Удалить задачу':
+    if message.text in ('❌ Удалить задачу', '/delete'):
         await delete_worker(message)
     if message.text == '📋 Мои задачи':
         tasks = await check_workers(message.from_user.id)
         await message.answer(f"Ваши задачи: {tasks}",
                              reply_markup=keyboard_client)
-
-    if message.text == '📡 Запустить слежение':
-        await worker_checker(message, await read_data(message.from_user.id))
+    if message.text in ('📡 Запустить слежение', '/start_track'):
+        await worker_checker(message)
     if message.text == '⚠ Остановить слежение':
         await message.answer('Это может занять какое-то время..')
         await disable_track(message.from_user.id)
@@ -63,7 +62,7 @@ async def reply_text(message: types.Message):
                              reply_markup=keyboard_client)
 
 
-@dp.message_handler(commands=['delete_worker'])
+@dp.message_handler(commands=['delete'])
 async def delete_worker(message: types.Message):
     """Start deleting a task"""
     await message.answer('Введи имя задачи')
@@ -83,7 +82,7 @@ async def delete_name(message: types.Message, state: FSMContext):
     await state.finish()
 
 
-@dp.message_handler(commands=['new'], state="*")
+@dp.message_handler(commands=['add'], state="*")
 async def set_worker(message: types.Message):
     """Start adding a task"""
     await message.answer('Введи имя задачи')
