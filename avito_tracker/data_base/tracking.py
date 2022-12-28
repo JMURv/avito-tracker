@@ -1,5 +1,3 @@
-import asyncio
-
 from avito_tracker.data_base.config import DSN
 from asyncpg import exceptions
 import asyncpg
@@ -113,11 +111,11 @@ def get_ready_id(data):
 
 async def get_active_users():
     conn = await asyncpg.connect(DSN)
-    query = f""" 
-     SELECT user_id
-     FROM users
-     WHERE is_tracking = 1 
-     """
+    query = """
+    SELECT user_id
+    FROM users
+    WHERE is_tracking = 1
+    """
     data = await conn.fetch(query)
     ready_data = list(map(get_ready_id, data))
     await conn.close()
