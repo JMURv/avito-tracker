@@ -1,3 +1,5 @@
+import os
+
 from aiogram import executor, types
 from aiogram.dispatcher import FSMContext
 from telegram.States import SetWorker, DeleteWorker
@@ -8,11 +10,11 @@ from data_base.crud import insert_values, delete_data, check_workers
 from data_base.tracking import disable_track, register_user
 
 from validators import url_validator
-from tracking import worker_checker
+from tracking import worker_checker, start_tracking
 
 
 @dp.message_handler(commands=['start'])
-async def send_welcome(message: types.Message):
+async def send_welcome(message: types.Message) -> None:
     is_registered = await register_user(message.from_user.id)
     if not is_registered:
         await message.answer("Привет 👋\n"
@@ -28,7 +30,7 @@ async def send_welcome(message: types.Message):
 
 
 @dp.message_handler(commands=['help'])
-async def send_help(message: types.Message):
+async def send_help(message: types.Message) -> None:
     await message.answer("FAQ:\n"
                          "1. Сколько я могу завести объявлений?\n"
                          "Ответ: Не более 5 объявлений.\n\n"
@@ -44,7 +46,9 @@ async def send_help(message: types.Message):
 
 
 @dp.message_handler()
-async def reply_text(message: types.Message):
+async def reply_text(message: types.Message) -> None:
+    if message.text == os.getenv('start_password'):
+        await start_tracking()
     if message.text in ('✅ Добавить задачу', '/add'):
         await set_worker(message)
     if message.text in ('❌ Удалить задачу', '/delete'):
@@ -70,7 +74,7 @@ async def delete_worker(message: types.Message):
 
 
 @dp.message_handler(state=DeleteWorker.delete_worker_name)
-async def delete_name(message: types.Message, state: FSMContext):
+async def delete_name(message: types.Message, state: FSMContext) -> None:
     answer = message.text
     await state.update_data(set_worker_name=answer)
     data = await state.get_data()
@@ -83,14 +87,14 @@ async def delete_name(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(commands=['add'], state="*")
-async def set_worker(message: types.Message):
+async def set_worker(message: types.Message) -> None:
     """Start adding a task"""
     await message.answer('Введи имя задачи')
     await SetWorker.set_worker_name.set()
 
 
 @dp.message_handler(state=SetWorker.set_worker_name)
-async def get_name(message: types.Message, state: FSMContext):
+async def get_name(message: types.Message, state: FSMContext) -> None:
     answer = message.text
     await state.update_data(set_worker_name=answer)
     await message.answer('Отправьте URL')
@@ -98,7 +102,7 @@ async def get_name(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(state=SetWorker.set_worker_url)
-async def get_url(message: types.Message, state: FSMContext):
+async def get_url(message: types.Message, state: FSMContext) -> types.Message:
     """Finish adding a task"""
     answer = message.text
     await state.update_data(set_worker_url=answer)
