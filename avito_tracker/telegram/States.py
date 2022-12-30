@@ -8,3 +8,8 @@ class SetWorker(StatesGroup):
 
 class DeleteWorker(StatesGroup):
     delete_worker_name = State()
+
+
+class BuySubscription(StatesGroup):
+    how_long = State()
+    how_many = State()

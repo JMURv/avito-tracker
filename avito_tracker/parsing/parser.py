@@ -65,13 +65,13 @@ async def async_avito(url: str) -> dict:
         "goog:chromeOptions": {
             "args":
                 [
-                    # "--headless",
-                    # "--disable-gpu",
-                    # "--no-sandbox",
-                    # "--disable-setuid-sandbox",
-                    # "--disable-dev-shm-usage",
-                    # "--disable-in-process-stack-traces",
-                    # "--remote-debugging-port=9222"
+                    "--headless",
+                    "--disable-gpu",
+                    "--no-sandbox",
+                    "--disable-setuid-sandbox",
+                    "--disable-dev-shm-usage",
+                    "--disable-in-process-stack-traces",
+                    "--remote-debugging-port=9222"
                 ]
         }
     }
