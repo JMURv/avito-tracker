@@ -8,7 +8,7 @@ from avito_tracker.telegram.keyboards import inline_kb
 from telegram.initializer import dp
 from yoomoney import Client, Quickpay
 
-TRIES = 3
+TRIES = 4
 
 load_dotenv(find_dotenv())
 token = getenv('yoomoney_token')
@@ -37,7 +37,7 @@ async def calculate_price(worker_quantity: str, days: str) -> int:
 
 async def form_bill(message: types.Message, user_id: int, amount: int):
     now = str(datetime.now()).split(' ')[0]  # 2022-12-30
-    label = str(user_id)
+    label = f"{user_id}.{now}"
     quickpay = Quickpay(
                 receiver="4100115677330952",
                 quickpay_form="shop",
@@ -53,7 +53,7 @@ async def form_bill(message: types.Message, user_id: int, amount: int):
         text=f'Ваша цена: {amount}',
         reply_markup=inline
     )
-    await sleep(60)
+    await sleep(40)
     for check in range(TRIES):
         history = client.operation_history(label=label)
         try:
