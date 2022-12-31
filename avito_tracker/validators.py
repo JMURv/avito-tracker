@@ -9,8 +9,8 @@ async def url_validator(url: str) -> bool:
     return True
 
 
-async def payment_validator(how_many: str, how_long: str) -> bool:
-    if how_many.isdigit() and how_long.isdigit():
-        if how_many in ('5', '10', '15'):
+async def payment_validator(worker_quantity: str, days: str) -> bool:
+    if worker_quantity.isdigit() and days.isdigit():
+        if worker_quantity in ('5', '10', '15'):
             return True
     return False

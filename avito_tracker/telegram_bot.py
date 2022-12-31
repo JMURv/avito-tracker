@@ -96,16 +96,19 @@ async def get_quantity(message: types.Message, state: FSMContext):
     answer = message.text
     await state.update_data(how_many=answer)
     data = await state.get_data()
-    worker_quantity = data.get('how_many')
-    days = data.get('how_long')
 
+    worker_quantity, days = data.get('how_many'), data.get('how_long')
     if not await payment_validator(worker_quantity, days):
         await state.finish()
         return await message.answer('Неправильные данные')
 
     await state.finish()
-    amount = await calculate_price(worker_quantity, days)
-    await form_bill(message, user_id, amount)
+    subscription_data = {
+        'worker_quantity': worker_quantity,
+        'days': days,
+        'amount': await calculate_price(worker_quantity, days)
+    }
+    await form_bill(message, user_id, subscription_data)
 
 
 @dp.message_handler(commands=['delete'])
