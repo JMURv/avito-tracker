@@ -3,7 +3,8 @@ from asyncpg import exceptions
 import asyncpg
 
 
-async def register_first_result(user_id, task_name, fres_name):
+async def register_first_result(
+        user_id: int, task_name: str, fres_name: str) -> None:
     conn = await asyncpg.connect(DSN)
     reg_query = f"""
     INSERT INTO results
@@ -14,7 +15,7 @@ async def register_first_result(user_id, task_name, fres_name):
     await conn.close()
 
 
-async def check_first_result(user_id, task_name):
+async def check_first_result(user_id: int, task_name: str) -> None:
     conn = await asyncpg.connect(DSN)
     query = f"""
     SELECT first_name
@@ -27,7 +28,7 @@ async def check_first_result(user_id, task_name):
     return data
 
 
-async def update_result(user_id, task_name, new_name):
+async def update_result(user_id: int, task_name: str, new_name: str) -> None:
     conn = await asyncpg.connect(DSN)
     update_query = f"""
     UPDATE results
@@ -39,7 +40,8 @@ async def update_result(user_id, task_name, new_name):
     await conn.close()
 
 
-async def check_if_exists(user_id):
+async def check_if_exists(user_id: int) -> bool:
+    """Проверить наличие уже просчитаных результатов"""
     conn = await asyncpg.connect(DSN)
     query = f"""
     SELECT *
@@ -51,7 +53,7 @@ async def check_if_exists(user_id):
     return True if len(data) > 0 else False
 
 
-async def register_user(user_id):
+async def register_user(user_id: int) -> bool:
     conn = await asyncpg.connect(DSN)
     is_registered = False
     try:
@@ -68,7 +70,7 @@ async def register_user(user_id):
         return is_registered
 
 
-async def is_tracking_now(user_id):
+async def is_tracking_now(user_id: int):
     conn = await asyncpg.connect(DSN)
     query = f"""
     SELECT is_tracking
@@ -79,7 +81,7 @@ async def is_tracking_now(user_id):
     return data
 
 
-async def enable_track(user_id):
+async def enable_track(user_id: int) -> None:
     conn = await asyncpg.connect(DSN)
     update_query = f"""
         UPDATE users
@@ -90,7 +92,7 @@ async def enable_track(user_id):
     await conn.close()
 
 
-async def disable_track(user_id):
+async def disable_track(user_id: int) -> None:
     conn = await asyncpg.connect(DSN)
     insert_query = f"""
     UPDATE users
@@ -109,7 +111,7 @@ def get_ready_id(data):
     return data[0]
 
 
-async def get_active_users():
+async def get_active_users() -> list:
     conn = await asyncpg.connect(DSN)
     query = """
     SELECT user_id

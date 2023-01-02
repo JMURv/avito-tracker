@@ -3,6 +3,7 @@ import os
 from aiogram import executor, types
 from aiogram.dispatcher import FSMContext
 
+from avito_tracker.data_base.payment import check_for_subscription
 from telegram.States import SetWorker, DeleteWorker, BuySubscription
 from telegram.initializer import dp
 from telegram.keyboards import keyboard_client, keyboard_workers
@@ -66,12 +67,19 @@ async def reply_text(message: types.Message) -> None:
         await disable_track(message.from_user.id)
         await message.answer('Готово!',
                              reply_markup=keyboard_client)
-    if message.text == 'Купить подписку':
+    if message.text == '⭐ Купить подписку':
         await buy_subscription(message)
 
 
 @dp.message_handler(commands=['buy'])
-async def buy_subscription(message: types.Message) -> None:
+async def buy_subscription(message: types.Message):
+
+    if await check_for_subscription(message.from_user.id):
+        return await message.answer(
+            'У вас уже есть подписка!',
+            reply_markup=keyboard_client
+        )
+
     await message.answer(
         'Сколько дней подписки хотите?\n'
         'Напишите количество.'
@@ -100,7 +108,10 @@ async def get_quantity(message: types.Message, state: FSMContext):
     worker_quantity, days = data.get('how_many'), data.get('how_long')
     if not await payment_validator(worker_quantity, days):
         await state.finish()
-        return await message.answer('Неправильные данные')
+        return await message.answer(
+            'Неправильные данные',
+            reply_markup=keyboard_client
+        )
 
     await state.finish()
     subscription_data = {

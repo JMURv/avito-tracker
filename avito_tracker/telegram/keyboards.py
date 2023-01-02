@@ -14,6 +14,7 @@ delete_task = KeyboardButton("❌ Удалить задачу")
 check_tasks = KeyboardButton("📋 Мои задачи")
 stop_all_tasks = KeyboardButton("⚠ Остановить слежение")
 start_all_tasks = KeyboardButton("📡 Запустить слежение")
+buy_subscription = KeyboardButton("⭐ Купить подписку")
 
 five_workers = KeyboardButton("5")
 ten_workers = KeyboardButton("10")
@@ -27,7 +28,7 @@ mounth = KeyboardButton("30")
 
 keyboard_client = ReplyKeyboardMarkup(resize_keyboard=True)
 keyboard_client.row(add_task, delete_task, check_tasks)\
-    .row(start_all_tasks)
+    .row(start_all_tasks, buy_subscription)
 
 keyboard_short = ReplyKeyboardMarkup(resize_keyboard=True)
 keyboard_short.row(stop_all_tasks)

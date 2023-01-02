@@ -1,5 +1,7 @@
 import asyncio
 from avito_tracker.data_base.crud import read_data
+from avito_tracker.data_base.payment import check_for_subscription,\
+    worker_quantity_check
 from parsing.parser import async_avito
 from aiogram import types
 from telegram.initializer import dp
@@ -52,16 +54,24 @@ async def worker_checker(message: types.Message) -> types.Message:
     user_id = message.from_user.id
     worker = await read_data(user_id)
     tasks_names = list(worker.keys())
+
+    avaliable_workers = 1
+
     if len(tasks_names) == 0:
         return await message.answer(
             'У Вас нет ни одного объявления --> '
             'Запуск невозможен',
             reply_markup=keyboard_client)
-    if len(tasks_names) > 5:
+
+    if await check_for_subscription(user_id):
+        avaliable_workers = await worker_quantity_check(user_id)
+
+    if len(tasks_names) > avaliable_workers:
         return await message.answer(
-            'У Вас более 5 объявлений! --> '
+            f'У Вас более {avaliable_workers} объявлений! --> '
             'Запуск невозможен',
             reply_markup=keyboard_client)
+
     if await check_if_exists(user_id):
         return await message.answer(
             'Ваши объявления активны',

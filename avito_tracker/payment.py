@@ -1,4 +1,3 @@
-import asyncio
 from asyncio import sleep
 from datetime import datetime, timedelta
 from os import getenv
@@ -6,11 +5,11 @@ from dotenv import load_dotenv, find_dotenv
 from aiogram import types
 
 from avito_tracker.data_base.payment import register_new_subscriber
-from avito_tracker.telegram.keyboards import inline_kb
+from avito_tracker.telegram.keyboards import inline_kb, keyboard_client
 from telegram.initializer import dp
 from yoomoney import Client, Quickpay
 
-TRIES = 4
+TRIES = 7
 
 load_dotenv(find_dotenv())
 token = getenv('yoomoney_token')
@@ -37,11 +36,13 @@ async def calculate_price(worker_quantity: str, days: str) -> int:
     return one_day_price*days
 
 
-async def form_bill(message: types.Message, user_id: int, subscription_data: dict):
-    amount = subscription_data.get('amount')
+async def form_bill(
+        message: types.Message, user_id: int, data: dict) -> types.Message:
+    amount = data.get('amount')
+    days = data.get('days')
 
-    now = str(datetime.now()).split(' ')[0]  # 2022-12-30
-    end_date = str(datetime.now() + timedelta(days=subscription_data.get('days'))).split(' ')[0]
+    now = str(datetime.now()).split(' ')[0]  # 2022-12-31
+    end_date = str(datetime.now() + timedelta(days=int(days))).split(' ')[0]
 
     label = f"{user_id}.{now}"
     quickpay = Quickpay(
@@ -56,9 +57,10 @@ async def form_bill(message: types.Message, user_id: int, subscription_data: dic
     inline = await inline_kb(payment_url, 'Купить подписку')
     await dp.bot.send_message(
         chat_id=user_id,
-        text=f"Дней подписки: {subscription_data.get('days')}\n"
-             f"Количество активных объявлений: {subscription_data.get('worker_quantity')}\n"
-             f"Итоговая цена: {amount}",
+        text=f"Дней подписки: {data.get('days')}\n"
+             f"Количество активных объявлений: {data.get('worker_quantity')}\n"
+             f"Итоговая цена: {amount}р\n\n"
+             f"Ссылка действительна 3 минуты с момента отправки",
         reply_markup=inline
     )
     await sleep(40)
@@ -69,26 +71,16 @@ async def form_bill(message: types.Message, user_id: int, subscription_data: dic
         except IndexError:
             status = 'unsuccess'
         if status == 'success':
-            await register_new_subscriber(user_id, now, end_date, subscription_data)
-            return await message.answer("Успех!")
+            await register_new_subscriber(user_id, now, end_date, data)
+            return await message.answer(
+                "Успешная оплата!\n"
+                "Наслаждайтесь подпиской 💕",
+                reply_markup=keyboard_client
+            )
         else:
             await sleep(20)
-    return await message.answer("Неудача!")
-
-
-# async def test(label: str):
-#     for check in range(TRIES):
-#         history = client.operation_history(label=label)
-#         try:
-#             status = history.operations[0].status
-#         except IndexError:
-#             print('Waiting')
-#             status = 'unsuccess'
-#         if status == 'success':
-#             return '+'
-#         else:
-#             await sleep(10)
-#     return '-'
-
-print(str(datetime.now()).split(' ')[0])
-print( str(datetime.now() + timedelta(days=10)).split(' ')[0] )
+    return await message.answer(
+        "Не дождался оплаты :(\n"
+        "Попробуйте еще раз",
+        reply_markup=keyboard_client
+    )
