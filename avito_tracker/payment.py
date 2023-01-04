@@ -72,7 +72,7 @@ async def form_bill(
         except IndexError:
             status = 'unsuccess'
         if status == 'success':
-            await DB.register_new_subscriber(user_id, now, end_date, data)
+            await DB.create_new_subscriber(user_id, now, end_date, data)
             return await message.answer(
                 "Успешная оплата!\n"
                 "Наслаждайтесь подпиской 💕",

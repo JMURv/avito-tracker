@@ -17,7 +17,7 @@ DB = DBCommands()
 
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message) -> None:
-    is_registered = await DB.register_user(message.from_user.id)
+    is_registered = await DB.create_user(message.from_user.id)
     if not is_registered:
         await message.answer("Привет 👋\n"
                              "Я бот, который следит за объявлениями за тебя!\n"
@@ -56,7 +56,7 @@ async def reply_text(message: types.Message) -> None:
     if message.text in ('❌ Удалить задачу', '/delete'):
         await delete_worker(message)
     if message.text == '📋 Мои задачи':
-        tasks = await DB.check_workers(message.from_user.id)
+        tasks = await DB.read_user_task(message.from_user.id)
         await message.answer(f"Ваши задачи: {tasks}",
                              reply_markup=keyboard_client)
     if message.text in ('📡 Запустить слежение', '/start_track'):
@@ -73,7 +73,7 @@ async def reply_text(message: types.Message) -> None:
 @dp.message_handler(commands=['buy'])
 async def buy_subscription(message: types.Message):
 
-    if await DB.check_for_subscription(message.from_user.id):
+    if await DB.is_subscriber(message.from_user.id):
         return await message.answer(
             'У вас уже есть подписка!',
             reply_markup=keyboard_client
@@ -136,7 +136,7 @@ async def delete_name(message: types.Message, state: FSMContext) -> None:
     data = await state.get_data()
     worker_name = data.get('set_worker_name')
 
-    db_resp = await DB.delete_data(message.from_user.id, worker_name)
+    db_resp = await DB.delete_task(message.from_user.id, worker_name)
     await DB.disable_track(message.from_user.id)
     await message.answer(db_resp)
     await state.finish()
@@ -172,7 +172,7 @@ async def get_url(message: types.Message, state: FSMContext) -> types.Message:
         return await message.answer('Неправильный URL')
 
     await message.answer(f'Добавляем {name} в нашу базу..')
-    await DB.insert_values(message.from_user.id, f"'{name}'", f"'{url}'")
+    await DB.create_task(message.from_user.id, f"'{name}'", f"'{url}'")
     await message.answer('Отлично!\n'
                          'Введите /start_track, чтобы начать слежение\n '
                          '/add, чтобы добавить еще одно объявление')

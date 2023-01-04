@@ -34,7 +34,7 @@ async def start_tracking() -> None:
     while True:
         active_users = await DB.get_active_users()
         for user_id in list(active_users):
-            worker = await DB.read_data(user_id)
+            worker = await DB.read_tasks(user_id)
             urls, tasks_names = list(worker.values()), list(worker.keys())
             tasks = list(map(
                 lambda url: asyncio.create_task(async_avito(url)), urls))
@@ -50,7 +50,7 @@ async def start_tracking() -> None:
 
 async def worker_checker(message: types.Message) -> types.Message:
     user_id = message.from_user.id
-    worker = await DB.read_data(user_id)
+    worker = await DB.read_tasks(user_id)
     tasks_names = list(worker.keys())
 
     avaliable_workers = 1
@@ -61,7 +61,7 @@ async def worker_checker(message: types.Message) -> types.Message:
             'Запуск невозможен',
             reply_markup=keyboard_client)
 
-    if await DB.check_for_subscription(user_id):
+    if await DB.is_subscriber(user_id):
         avaliable_workers = await DB.worker_quantity_check(user_id)
 
     if len(tasks_names) > avaliable_workers:
@@ -70,7 +70,7 @@ async def worker_checker(message: types.Message) -> types.Message:
             'Запуск невозможен',
             reply_markup=keyboard_client)
 
-    if await DB.check_if_exists(user_id):
+    if await DB.is_exist(user_id):
         return await message.answer(
             'Ваши объявления активны',
             reply_markup=keyboard_short)
