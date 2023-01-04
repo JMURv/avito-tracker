@@ -11,6 +11,7 @@ class DBCommands:
         self.pool = None
 
     async def worker_quantity_check(self, user_id: int) -> int:
+        """CRUD Payment. Read how many workers are allowed."""
         if self.pool is None:
             self.pool = await asyncpg.create_pool(dsn=self.dsn, min_size=2, max_size=4)
         async with self.pool.acquire() as conn:

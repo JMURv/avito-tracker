@@ -51,7 +51,6 @@ async def start_tracking() -> None:
 async def worker_checker(message: types.Message) -> types.Message:
     user_id = message.from_user.id
     worker = await DB.read_data(user_id)
-    # worker = await read_data(user_id)
     tasks_names = list(worker.keys())
 
     avaliable_workers = 1
