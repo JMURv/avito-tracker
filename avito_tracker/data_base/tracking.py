@@ -1,3 +1,5 @@
+import asyncio
+
 from avito_tracker.data_base.config import DSN
 from asyncpg import exceptions
 import asyncpg
@@ -15,7 +17,7 @@ async def register_first_result(
     await conn.close()
 
 
-async def check_first_result(user_id: int, task_name: str) -> None:
+async def read_result(user_id: int, task_name: str) -> None:
     conn = await asyncpg.connect(DSN)
     query = f"""
     SELECT first_name
@@ -107,10 +109,6 @@ async def disable_track(user_id: int) -> None:
     await conn.close()
 
 
-def get_ready_id(data):
-    return data[0]
-
-
 async def get_active_users() -> list:
     conn = await asyncpg.connect(DSN)
     query = """
@@ -119,6 +117,6 @@ async def get_active_users() -> list:
     WHERE is_tracking = 1
     """
     data = await conn.fetch(query)
-    ready_data = list(map(get_ready_id, data))
+    ready_data = [user_id[0] for user_id in data]
     await conn.close()
     return ready_data

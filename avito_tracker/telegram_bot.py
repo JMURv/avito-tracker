@@ -3,22 +3,21 @@ import os
 from aiogram import executor, types
 from aiogram.dispatcher import FSMContext
 
-from avito_tracker.data_base.payment import check_for_subscription
 from telegram.States import SetWorker, DeleteWorker, BuySubscription
 from telegram.initializer import dp
 from telegram.keyboards import keyboard_client, keyboard_workers
-
-from data_base.crud import insert_values, delete_data, check_workers
-from data_base.tracking import disable_track, register_user
 
 from avito_tracker.payment import form_bill, calculate_price
 from validators import url_validator, payment_validator
 from tracking import worker_checker, start_tracking
 
+from data_base.DataBase import DBCommands
+DB = DBCommands()
+
 
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message) -> None:
-    is_registered = await register_user(message.from_user.id)
+    is_registered = await DB.register_user(message.from_user.id)
     if not is_registered:
         await message.answer("Привет 👋\n"
                              "Я бот, который следит за объявлениями за тебя!\n"
@@ -57,14 +56,14 @@ async def reply_text(message: types.Message) -> None:
     if message.text in ('❌ Удалить задачу', '/delete'):
         await delete_worker(message)
     if message.text == '📋 Мои задачи':
-        tasks = await check_workers(message.from_user.id)
+        tasks = await DB.check_workers(message.from_user.id)
         await message.answer(f"Ваши задачи: {tasks}",
                              reply_markup=keyboard_client)
     if message.text in ('📡 Запустить слежение', '/start_track'):
         await worker_checker(message)
     if message.text == '⚠ Остановить слежение':
         await message.answer('Это может занять какое-то время..')
-        await disable_track(message.from_user.id)
+        await DB.disable_track(message.from_user.id)
         await message.answer('Готово!',
                              reply_markup=keyboard_client)
     if message.text == '⭐ Купить подписку':
@@ -74,7 +73,7 @@ async def reply_text(message: types.Message) -> None:
 @dp.message_handler(commands=['buy'])
 async def buy_subscription(message: types.Message):
 
-    if await check_for_subscription(message.from_user.id):
+    if await DB.check_for_subscription(message.from_user.id):
         return await message.answer(
             'У вас уже есть подписка!',
             reply_markup=keyboard_client
@@ -137,8 +136,8 @@ async def delete_name(message: types.Message, state: FSMContext) -> None:
     data = await state.get_data()
     worker_name = data.get('set_worker_name')
 
-    db_resp = await delete_data(message.from_user.id, worker_name)
-    await disable_track(message.from_user.id)
+    db_resp = await DB.delete_data(message.from_user.id, worker_name)
+    await DB.disable_track(message.from_user.id)
     await message.answer(db_resp)
     await state.finish()
 
@@ -173,7 +172,7 @@ async def get_url(message: types.Message, state: FSMContext) -> types.Message:
         return await message.answer('Неправильный URL')
 
     await message.answer(f'Добавляем {name} в нашу базу..')
-    await insert_values(message.from_user.id, f"'{name}'", f"'{url}'")
+    await DB.insert_values(message.from_user.id, f"'{name}'", f"'{url}'")
     await message.answer('Отлично!\n'
                          'Введите /start_track, чтобы начать слежение\n '
                          '/add, чтобы добавить еще одно объявление')

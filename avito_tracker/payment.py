@@ -4,11 +4,12 @@ from os import getenv
 from dotenv import load_dotenv, find_dotenv
 from aiogram import types
 
-from avito_tracker.data_base.payment import register_new_subscriber
+from avito_tracker.data_base.DataBase import DBCommands
 from avito_tracker.telegram.keyboards import inline_kb, keyboard_client
 from telegram.initializer import dp
 from yoomoney import Client, Quickpay
 
+DB = DBCommands()
 TRIES = 7
 
 load_dotenv(find_dotenv())
@@ -71,7 +72,7 @@ async def form_bill(
         except IndexError:
             status = 'unsuccess'
         if status == 'success':
-            await register_new_subscriber(user_id, now, end_date, data)
+            await DB.register_new_subscriber(user_id, now, end_date, data)
             return await message.answer(
                 "Успешная оплата!\n"
                 "Наслаждайтесь подпиской 💕",
