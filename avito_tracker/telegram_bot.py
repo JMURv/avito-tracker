@@ -1,10 +1,10 @@
-import os
+import asyncio
 
-from aiogram import executor, types
+from aiogram import types
 from aiogram.dispatcher import FSMContext
 
 from telegram.States import SetWorker, DeleteWorker, BuySubscription
-from telegram.initializer import dp
+from telegram.initializer import dp, bot
 from telegram.keyboards import keyboard_client, keyboard_workers
 
 from avito_tracker.payment import form_bill, calculate_price
@@ -19,53 +19,56 @@ DB = DBCommands()
 async def send_welcome(message: types.Message) -> None:
     is_registered = await DB.create_user(message.from_user.id)
     if not is_registered:
-        await message.answer("Привет 👋\n"
-                             "Я бот, который следит за объявлениями за тебя!\n"
-                             "Прочитай правила и FAQ перед использованием:"
-                             " /help",
-                             reply_markup=keyboard_client)
+        await message.answer(
+            "Привет 👋\n"
+            "Я бот, который следит за объявлениями за тебя!\n"
+            "Прочитай правила и FAQ перед использованием:"
+            " /help",
+            reply_markup=keyboard_client)
     else:
         name = message.from_user.username
-        await message.answer(f"С возвращением, {name} 👋\n"
-                             "Я тебя помню! Как дела?",
-                             reply_markup=keyboard_client)
+        await message.answer(
+            f"С возвращением, {name} 👋\n"
+            "Я тебя помню! Как дела?",
+            reply_markup=keyboard_client)
 
 
 @dp.message_handler(commands=['help'])
 async def send_help(message: types.Message) -> None:
-    await message.answer("FAQ:\n"
-                         "1. Сколько я могу завести объявлений?\n"
-                         "Ответ: Не более 5 объявлений.\n\n"
-                         "2. Какая ссылка требуется для трекинга?\n"
-                         "Ответ: Ссылка из поиска авито. "
-                         "Можно настраивать всё, что предлагает сервис: "
-                         "цену, доставку и тд.\n"
-                         "Главное, что Вам нужно сделать - "
-                         "установить сортировку по дате.\n\n"
-                         "Предупреждение:\n"
-                         "Остановка слежения может иметь задержку.",
-                         reply_markup=keyboard_client)
+    await message.answer(
+        "FAQ:\n"
+        "1. Сколько я могу завести объявлений?\n"
+        "Ответ: Не более 5 объявлений.\n\n"
+        "2. Какая ссылка требуется для трекинга?\n"
+        "Ответ: Ссылка из поиска авито. "
+        "Можно настраивать всё, что предлагает сервис: "
+        "цену, доставку и тд.\n"
+        "Главное, что Вам нужно сделать - "
+        "установить сортировку по дате.\n\n"
+        "Предупреждение:\n"
+        "Остановка слежения может иметь задержку.",
+        reply_markup=keyboard_client)
 
 
 @dp.message_handler()
 async def reply_text(message: types.Message) -> None:
-    if message.text == os.getenv('start_password'):
-        await start_tracking()
     if message.text in ('✅ Добавить задачу', '/add'):
         await set_worker(message)
     if message.text in ('❌ Удалить задачу', '/delete'):
         await delete_worker(message)
     if message.text == '📋 Мои задачи':
         tasks = await DB.read_user_task(message.from_user.id)
-        await message.answer(f"Ваши задачи: {tasks}",
-                             reply_markup=keyboard_client)
+        await message.answer(
+            f"Ваши задачи: {tasks}",
+            reply_markup=keyboard_client)
     if message.text in ('📡 Запустить слежение', '/start_track'):
         await worker_checker(message)
     if message.text == '⚠ Остановить слежение':
         await message.answer('Это может занять какое-то время..')
         await DB.disable_track(message.from_user.id)
-        await message.answer('Готово!',
-                             reply_markup=keyboard_client)
+        await message.answer(
+            'Готово!',
+            reply_markup=keyboard_client)
     if message.text == '⭐ Купить подписку':
         await buy_subscription(message)
 
@@ -173,11 +176,19 @@ async def get_url(message: types.Message, state: FSMContext) -> types.Message:
 
     await message.answer(f'Добавляем {name} в нашу базу..')
     await DB.create_task(message.from_user.id, f"'{name}'", f"'{url}'")
-    await message.answer('Отлично!\n'
-                         'Введите /start_track, чтобы начать слежение\n '
-                         '/add, чтобы добавить еще одно объявление')
+    await message.answer(
+        'Отлично!\n'
+        'Введите /start_track, чтобы начать слежение\n '
+        '/add, чтобы добавить еще одно объявление')
     await state.finish()
 
 
+async def bot_start():
+    await dp.start_polling(bot)
+
+
 if __name__ == '__main__':
-    executor.start_polling(dp, skip_updates=True)
+    loop = asyncio.get_event_loop()
+    loop.create_task(bot_start())
+    loop.create_task(start_tracking())
+    loop.run_forever()
