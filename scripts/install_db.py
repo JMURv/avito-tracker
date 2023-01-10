@@ -31,17 +31,7 @@ async def install_db():
             await conn.execute(command)
         except Exception:
             print("Что-то пошло не так")
-
-
-async def uninstall_db():
-    conn = await asyncpg.connect(DSN)
-    command = """DELETE TABLE users, workers, results, subscribers CASCADE;"""
-    await conn.execute(command)
-
-
-async def reinstall_db():
-    await uninstall_db()
-    await install_db()
+            pass
 
 
 if __name__ == '__main__':

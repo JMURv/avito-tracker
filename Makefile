@@ -1,9 +1,15 @@
 start:
-	python run.py
+	python scripts\run.py
 
 install:
 	poetry build
-	python avito_tracker\install_db.py
+	python scripts\install_db.py
+
+uninstall:
+	python scripts\uninstall_db.py
+
+reinstall:
+	python scripts\reinstall_db.py
 
 lint:
 	flake8 avito_tracker

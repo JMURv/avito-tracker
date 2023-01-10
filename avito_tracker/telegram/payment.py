@@ -2,7 +2,7 @@ from asyncio import sleep
 from datetime import datetime, timedelta
 from aiogram import types
 
-from avito_tracker.misc import BOT_ENV
+from avito_tracker.addons.misc import BOT_ENV
 from avito_tracker.data_base.DataBase import DBCommands
 from avito_tracker.telegram.keyboards import inline_kb, main_kb
 from avito_tracker.telegram.initializer import dp

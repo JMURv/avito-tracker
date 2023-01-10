@@ -1,4 +1,4 @@
-from avito_tracker.misc import DB_ENV
+from avito_tracker.addons.misc import DB_ENV
 
 user = DB_ENV.get('user')
 password = DB_ENV.get('password')

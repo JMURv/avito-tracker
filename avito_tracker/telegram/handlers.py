@@ -7,7 +7,7 @@ from avito_tracker.telegram.initializer import dp
 from avito_tracker.telegram.keyboards import main_kb, keyboard_workers
 
 from avito_tracker.telegram.payment import form_bill, calculate_price
-from avito_tracker.validators import url_validator, payment_validator
+from avito_tracker.addons.validators import url_validator, payment_validator
 from avito_tracker.parsing.tracking import worker_checker
 
 from avito_tracker.data_base.DataBase import DBCommands
@@ -37,15 +37,14 @@ async def send_help(message: types.Message) -> None:
     await message.answer(
         "FAQ:\n"
         "1. Сколько я могу завести объявлений?\n"
-        "Ответ: Не более 5 объявлений.\n\n"
+        "Ответ: Не более 1 объявления для бесплатного аккаунта.\n\n"
         "2. Какая ссылка требуется для трекинга?\n"
         "Ответ: Ссылка из поиска авито. "
         "Можно настраивать всё, что предлагает сервис: "
         "цену, доставку и тд.\n"
         "Главное, что Вам нужно сделать - "
-        "установить сортировку по дате.\n\n"
-        "Предупреждение:\n"
-        "Остановка слежения может иметь задержку.",
+        "установить сортировку по дате, "
+        "иначе бот будет работать неправильно.\n\n",
         reply_markup=main_kb)
 
 
