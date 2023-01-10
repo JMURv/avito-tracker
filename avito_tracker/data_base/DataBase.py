@@ -97,11 +97,13 @@ class DBPayment(DBConnect):
     async def worker_quantity_check(self, user_id: int) -> int:
         """CRUD Payment. Read how many workers are allowed."""
         await DBConnect.connect(self)
+        now = str(datetime.now()).split(' ')[0]
         async with self.pool.acquire() as conn:
             workers_query = f"""
                         SELECT workers_quantity
                         FROM subscribers
-                        WHERE user_id = {user_id};"""
+                        WHERE user_id = {user_id}
+                        AND end_date > '{now}';"""
             data = await conn.fetchval(workers_query)
             return data
 
@@ -171,7 +173,12 @@ class DBCommands(DBTracking, DBPayment):
             DELETE FROM workers
             WHERE USER_ID = {user_id}
             AND TASK_NAME = '{worker_name}';"""
+            delete_result_query = f"""
+            DELETE FROM results
+            WHERE USER_ID = {user_id}
+            AND TASK_NAME = '{worker_name}';"""
             resp = await conn.execute(delete_query)
+            await conn.execute(delete_result_query)
             if resp[-1] == '0':
                 return f'Неправильное имя задачи {worker_name}'
             else:

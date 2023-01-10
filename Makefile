@@ -1,9 +1,9 @@
 start:
-	python avito_tracker\telegram_bot.py
+	python run.py
 
 install:
 	poetry build
-	python avito_tracker\create_db.py
+	python avito_tracker\install_db.py
 
 lint:
 	flake8 avito_tracker

@@ -1,6 +1,6 @@
 import asyncio
 import asyncpg
-from data_base.config import DSN
+from avito_tracker.data_base.config import DSN
 
 
 async def install_db():
@@ -11,17 +11,17 @@ async def install_db():
             is_tracking integer);""",
 
         """CREATE TABLE IF NOT EXIST workers (
-            user_id REFERENCES users.user_id,
+            user_id REFERENCES users(user_id),
             task_name varchar(255),
-            task_url varchar (255));""",
+            task_url varchar(255));""",
 
         """CREATE TABLE IF NOT EXIST results (
-            user_id REFERENCES users.user_id,
+            user_id REFERENCES users(user_id),
             task_name varchar(255),
             first_name varchar(255));""",
 
         """CREATE TABLE IF NOT EXIST subscribers (
-            user_id REFERENCES users.user_id,
+            user_id REFERENCES users(user_id),
             purchase_date date,
             end_date date,
             workers_quantity integer);"""

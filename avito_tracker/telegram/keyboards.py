@@ -16,22 +16,15 @@ stop_all_tasks = KeyboardButton("⚠ Остановить слежение")
 start_all_tasks = KeyboardButton("📡 Запустить слежение")
 buy_subscription = KeyboardButton("⭐ Купить подписку")
 
+main_kb = ReplyKeyboardMarkup(resize_keyboard=True)
+main_kb.row(add_task, delete_task, check_tasks)\
+    .row(start_all_tasks, buy_subscription)
+short_kb = ReplyKeyboardMarkup(resize_keyboard=True)
+short_kb.row(stop_all_tasks)
+
 five_workers = KeyboardButton("5")
 ten_workers = KeyboardButton("10")
 fifthteen_workers = KeyboardButton("15")
-
-one_day = KeyboardButton("1")
-three_days = KeyboardButton("3")
-seven_days = KeyboardButton("7")
-forthteen_days = KeyboardButton("14")
-mounth = KeyboardButton("30")
-
-keyboard_client = ReplyKeyboardMarkup(resize_keyboard=True)
-keyboard_client.row(add_task, delete_task, check_tasks)\
-    .row(start_all_tasks, buy_subscription)
-
-keyboard_short = ReplyKeyboardMarkup(resize_keyboard=True)
-keyboard_short.row(stop_all_tasks)
 
 keyboard_workers = ReplyKeyboardMarkup(resize_keyboard=True)
 keyboard_workers.row(five_workers, ten_workers, fifthteen_workers)

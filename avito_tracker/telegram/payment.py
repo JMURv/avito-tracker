@@ -4,8 +4,8 @@ from aiogram import types
 
 from avito_tracker.misc import BOT_ENV
 from avito_tracker.data_base.DataBase import DBCommands
-from avito_tracker.telegram.keyboards import inline_kb, keyboard_client
-from telegram.initializer import dp
+from avito_tracker.telegram.keyboards import inline_kb, main_kb
+from avito_tracker.telegram.initializer import dp
 from yoomoney import Client, Quickpay
 
 DB = DBCommands()
@@ -72,12 +72,12 @@ async def form_bill(
             return await message.answer(
                 "Успешная оплата!\n"
                 "Наслаждайтесь подпиской 💕",
-                reply_markup=keyboard_client
+                reply_markup=main_kb
             )
         else:
             await sleep(20)
     return await message.answer(
         "Не дождался оплаты :(\n"
         "Попробуйте еще раз",
-        reply_markup=keyboard_client
+        reply_markup=main_kb
     )

@@ -1,17 +1,16 @@
-import asyncio
 
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 
-from telegram.States import SetWorker, DeleteWorker, BuySubscription
-from telegram.initializer import dp, bot
-from telegram.keyboards import keyboard_client, keyboard_workers
+from avito_tracker.telegram import States
+from avito_tracker.telegram.initializer import dp
+from avito_tracker.telegram.keyboards import main_kb, keyboard_workers
 
-from avito_tracker.payment import form_bill, calculate_price
-from validators import url_validator, payment_validator
-from tracking import worker_checker, start_tracking
+from avito_tracker.telegram.payment import form_bill, calculate_price
+from avito_tracker.validators import url_validator, payment_validator
+from avito_tracker.parsing.tracking import worker_checker
 
-from data_base.DataBase import DBCommands
+from avito_tracker.data_base.DataBase import DBCommands
 DB = DBCommands()
 
 
@@ -24,13 +23,13 @@ async def send_welcome(message: types.Message) -> None:
             "Я бот, который следит за объявлениями за тебя!\n"
             "Прочитай правила и FAQ перед использованием:"
             " /help",
-            reply_markup=keyboard_client)
+            reply_markup=main_kb)
     else:
         name = message.from_user.username
         await message.answer(
             f"С возвращением, {name} 👋\n"
             "Я тебя помню! Как дела?",
-            reply_markup=keyboard_client)
+            reply_markup=main_kb)
 
 
 @dp.message_handler(commands=['help'])
@@ -47,7 +46,7 @@ async def send_help(message: types.Message) -> None:
         "установить сортировку по дате.\n\n"
         "Предупреждение:\n"
         "Остановка слежения может иметь задержку.",
-        reply_markup=keyboard_client)
+        reply_markup=main_kb)
 
 
 @dp.message_handler()
@@ -60,7 +59,7 @@ async def reply_text(message: types.Message) -> None:
         tasks = await DB.read_user_task(message.from_user.id)
         await message.answer(
             f"Ваши задачи: {tasks}",
-            reply_markup=keyboard_client)
+            reply_markup=main_kb)
     if message.text in ('📡 Запустить слежение', '/start_track'):
         await worker_checker(message)
     if message.text == '⚠ Остановить слежение':
@@ -68,7 +67,7 @@ async def reply_text(message: types.Message) -> None:
         await DB.disable_track(message.from_user.id)
         await message.answer(
             'Готово!',
-            reply_markup=keyboard_client)
+            reply_markup=main_kb)
     if message.text == '⭐ Купить подписку':
         await buy_subscription(message)
 
@@ -79,17 +78,17 @@ async def buy_subscription(message: types.Message):
     if await DB.is_subscriber(message.from_user.id):
         return await message.answer(
             'У вас уже есть подписка!',
-            reply_markup=keyboard_client
+            reply_markup=main_kb
         )
 
     await message.answer(
         'Сколько дней подписки хотите?\n'
         'Напишите количество.'
     )
-    await BuySubscription.how_long.set()
+    await States.BuySubscription.how_long.set()
 
 
-@dp.message_handler(state=BuySubscription.how_long)
+@dp.message_handler(state=States.BuySubscription.how_long)
 async def get_time(message: types.Message, state: FSMContext) -> None:
     answer = message.text
     await state.update_data(how_long=answer)
@@ -97,10 +96,10 @@ async def get_time(message: types.Message, state: FSMContext) -> None:
         'Как много объявлений хотите отслежвать?',
         reply_markup=keyboard_workers
     )
-    await BuySubscription.how_many.set()
+    await States.BuySubscription.how_many.set()
 
 
-@dp.message_handler(state=BuySubscription.how_many)
+@dp.message_handler(state=States.BuySubscription.how_many)
 async def get_quantity(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     answer = message.text
@@ -112,7 +111,7 @@ async def get_quantity(message: types.Message, state: FSMContext):
         await state.finish()
         return await message.answer(
             'Неправильные данные',
-            reply_markup=keyboard_client
+            reply_markup=main_kb
         )
 
     await state.finish()
@@ -128,10 +127,10 @@ async def get_quantity(message: types.Message, state: FSMContext):
 async def delete_worker(message: types.Message):
     """Start deleting a task"""
     await message.answer('Введи имя задачи')
-    await DeleteWorker.delete_worker_name.set()
+    await States.DeleteWorker.delete_worker_name.set()
 
 
-@dp.message_handler(state=DeleteWorker.delete_worker_name)
+@dp.message_handler(state=States.DeleteWorker.delete_worker_name)
 async def delete_name(message: types.Message, state: FSMContext) -> None:
     """Deleting a task"""
     answer = message.text
@@ -140,7 +139,6 @@ async def delete_name(message: types.Message, state: FSMContext) -> None:
     worker_name = data.get('set_worker_name')
 
     db_resp = await DB.delete_task(message.from_user.id, worker_name)
-    await DB.disable_track(message.from_user.id)
     await message.answer(db_resp)
     await state.finish()
 
@@ -149,19 +147,19 @@ async def delete_name(message: types.Message, state: FSMContext) -> None:
 async def set_worker(message: types.Message) -> None:
     """Start adding a task"""
     await message.answer('Введи имя задачи')
-    await SetWorker.set_worker_name.set()
+    await States.SetWorker.set_worker_name.set()
 
 
-@dp.message_handler(state=SetWorker.set_worker_name)
+@dp.message_handler(state=States.SetWorker.set_worker_name)
 async def get_name(message: types.Message, state: FSMContext) -> None:
     """Add task name"""
     answer = message.text
     await state.update_data(set_worker_name=answer)
     await message.answer('Отправьте URL')
-    await SetWorker.set_worker_url.set()
+    await States.SetWorker.set_worker_url.set()
 
 
-@dp.message_handler(state=SetWorker.set_worker_url)
+@dp.message_handler(state=States.SetWorker.set_worker_url)
 async def get_url(message: types.Message, state: FSMContext) -> types.Message:
     """Add task URL and finish"""
     answer = message.text
@@ -181,14 +179,3 @@ async def get_url(message: types.Message, state: FSMContext) -> types.Message:
         'Введите /start_track, чтобы начать слежение\n '
         '/add, чтобы добавить еще одно объявление')
     await state.finish()
-
-
-async def bot_start():
-    await dp.start_polling(bot)
-
-
-if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    loop.create_task(bot_start())
-    loop.create_task(start_tracking())
-    loop.run_forever()
