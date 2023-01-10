@@ -1,11 +1,9 @@
-import os
-from dotenv import load_dotenv, find_dotenv
+from avito_tracker.misc import DB_ENV
 
-load_dotenv(find_dotenv())
-user = os.getenv('user')
-password = os.getenv('password')
-host = os.getenv('host')
-port = os.getenv('port')
-database = os.getenv('database')
+user = DB_ENV.get('user')
+password = DB_ENV.get('password')
+host = DB_ENV.get('host')
+port = DB_ENV.get('port')
+database = DB_ENV.get('database')
 
 DSN = f"postgres://{user}:{password}@{host}:{port}/{database}"

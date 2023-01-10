@@ -1,9 +1,8 @@
 from asyncio import sleep
 from datetime import datetime, timedelta
-from os import getenv
-from dotenv import load_dotenv, find_dotenv
 from aiogram import types
 
+from avito_tracker.misc import BOT_ENV
 from avito_tracker.data_base.DataBase import DBCommands
 from avito_tracker.telegram.keyboards import inline_kb, keyboard_client
 from telegram.initializer import dp
@@ -11,10 +10,7 @@ from yoomoney import Client, Quickpay
 
 DB = DBCommands()
 TRIES = 7
-
-load_dotenv(find_dotenv())
-token = getenv('yoomoney_token')
-client = Client(token)
+client = Client(BOT_ENV.get('yoomoney_token'))
 
 
 async def calculate_price(worker_quantity: str, days: str) -> int:
