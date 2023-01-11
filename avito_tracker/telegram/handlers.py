@@ -4,7 +4,7 @@ from aiogram.dispatcher import FSMContext
 
 from avito_tracker.telegram import States
 from avito_tracker.telegram.initializer import dp
-from avito_tracker.telegram.keyboards import main_kb, keyboard_workers
+from avito_tracker.telegram.keyboards import main_kb, workers_kb, cancel_kb
 
 from avito_tracker.telegram.payment import form_bill, calculate_price
 from avito_tracker.addons.validators import url_validator, payment_validator
@@ -48,6 +48,17 @@ async def send_help(message: types.Message) -> None:
         reply_markup=main_kb)
 
 
+@dp.message_handler(lambda message: message.text == 'Отмена', state='*')
+async def cancel(message: types.Message, state: FSMContext):
+    state_status = await state.get_state()
+    if state_status is None:
+        return
+    await state.finish()
+    await message.answer(
+        'Отменяю',
+        reply_markup=main_kb)
+
+
 @dp.message_handler()
 async def reply_text(message: types.Message) -> None:
     if message.text in ('✅ Добавить задачу', '/add'):
@@ -82,7 +93,8 @@ async def buy_subscription(message: types.Message):
 
     await message.answer(
         'Сколько дней подписки хотите?\n'
-        'Напишите количество.'
+        'Напишите количество.',
+        reply_markup=cancel_kb
     )
     await States.BuySubscription.how_long.set()
 
@@ -93,7 +105,7 @@ async def get_time(message: types.Message, state: FSMContext) -> None:
     await state.update_data(how_long=answer)
     await message.answer(
         'Как много объявлений хотите отслежвать?',
-        reply_markup=keyboard_workers
+        reply_markup=workers_kb
     )
     await States.BuySubscription.how_many.set()
 
@@ -125,7 +137,10 @@ async def get_quantity(message: types.Message, state: FSMContext):
 @dp.message_handler(commands=['delete'])
 async def delete_worker(message: types.Message):
     """Start deleting a task"""
-    await message.answer('Введи имя задачи')
+    await message.answer(
+        'Введи имя задачи',
+        reply_markup=cancel_kb
+    )
     await States.DeleteWorker.delete_worker_name.set()
 
 
@@ -145,7 +160,10 @@ async def delete_name(message: types.Message, state: FSMContext) -> None:
 @dp.message_handler(commands=['add'], state="*")
 async def set_worker(message: types.Message) -> None:
     """Start adding a task"""
-    await message.answer('Введи имя задачи')
+    await message.answer(
+        'Введи имя задачи',
+        reply_markup=cancel_kb
+    )
     await States.SetWorker.set_worker_name.set()
 
 
@@ -154,7 +172,10 @@ async def get_name(message: types.Message, state: FSMContext) -> None:
     """Add task name"""
     answer = message.text
     await state.update_data(set_worker_name=answer)
-    await message.answer('Отправьте URL')
+    await message.answer(
+        'Отправьте URL',
+        reply_markup=cancel_kb
+    )
     await States.SetWorker.set_worker_url.set()
 
 
