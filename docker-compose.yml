@@ -1,0 +1,28 @@
+version: '3.3'
+services:
+  postgres:
+    container_name: postgres_avito
+    image: postgres:15.0-alpine
+    restart: always
+    ports:
+      - "5432:5432"
+    env_file:
+      - docker/env/.env
+    volumes:
+      - pg_data_avito:/var/lib/postgresql/data
+  bot:
+    container_name: avito_bot
+    image: "avito_bot:latest"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - docker/env/.env
+    volumes:
+      - .:/app
+    depends_on:
+      - postgres
+    command: sh -c "poetry run python scripts/install_db.py &&
+      poetry run python run.py"
+volumes:
+  pg_data_avito:

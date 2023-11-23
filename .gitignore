@@ -1,0 +1,7 @@
+.idea
+*/__pycache__/
+*/*/__pycache__/
+*/*/*/__pycache__/
+
+docker/env/.env
+docker/env/.env.prod
