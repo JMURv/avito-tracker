@@ -1,3 +1,4 @@
+from loguru import logger
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.utils.exceptions import MessageNotModified
@@ -32,6 +33,7 @@ async def send_welcome(message: types.Message):
                  "/help"
     if is_registered:
         hello_text = f"С возвращением, {message.from_user.username} 👋\n"
+    # TODO: Логирование
     with open('./data/avito_logo.png', 'rb') as photo:
         return await message.answer_photo(
             photo=photo,

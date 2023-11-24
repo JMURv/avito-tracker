@@ -10,6 +10,17 @@ services:
       - docker/env/.env
     volumes:
       - pg_data_avito:/var/lib/postgresql/data
+  pgadmin:
+    container_name: pgadmin_avito
+    image: dpage/pgadmin4
+    env_file:
+      - docker/env/.env
+    ports:
+      - "15432:80"
+    volumes:
+      - pgadmin_avito:/var/lib/pgadmin
+    depends_on:
+      - postgres
   bot:
     container_name: avito_bot
     image: "avito_bot:latest"
@@ -26,3 +37,4 @@ services:
       poetry run python run.py"
 volumes:
   pg_data_avito:
+  pgadmin_avito:

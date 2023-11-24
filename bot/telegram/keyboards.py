@@ -16,6 +16,19 @@ back = "Назад"
 accept = "✅"
 crystal_pay = "💎 Crystal Pay"
 
+available_days = [
+    "5",
+    "10",
+    "20",
+    "30"
+]
+
+available_tasks = [
+    "5",
+    "10",
+    "15"
+]
+
 
 async def accept_or_back_markup():
     markup = InlineKeyboardMarkup(selective=True)
@@ -40,6 +53,10 @@ async def main_markup():
         InlineKeyboardButton(text=start_all_tasks, callback_data=start_all_tasks),
         InlineKeyboardButton(text=stop_all_tasks, callback_data=stop_all_tasks)
     )
+    markup.add(
+        InlineKeyboardButton(text=rules, callback_data=rules),
+        InlineKeyboardButton(text=support, callback_data=support)
+    )
     return markup
 
 
@@ -55,6 +72,10 @@ async def active_tracking_markup():
     )
     markup.add(
         InlineKeyboardButton(text=stop_all_tasks, callback_data=stop_all_tasks)
+    )
+    markup.add(
+        InlineKeyboardButton(text=rules, callback_data=rules),
+        InlineKeyboardButton(text=support, callback_data=support)
     )
     return markup
 
@@ -82,6 +103,30 @@ async def payment_systems_markup():
     )
     markup.add(
         InlineKeyboardButton(text=cancel, callback_data=cancel)
+    )
+    return markup
+
+
+async def payment_days_markup():
+    markup = InlineKeyboardMarkup(selective=True)
+    for day in available_days:
+        markup.add(
+            InlineKeyboardButton(text=day, callback_data=day)
+        )
+    markup.add(
+        InlineKeyboardButton(text=back, callback_data=back)
+    )
+    return markup
+
+
+async def payment_tasks_markup():
+    markup = InlineKeyboardMarkup(selective=True)
+    for day in available_tasks:
+        markup.add(
+            InlineKeyboardButton(text=day, callback_data=day)
+        )
+    markup.add(
+        InlineKeyboardButton(text=back, callback_data=back)
     )
     return markup
 

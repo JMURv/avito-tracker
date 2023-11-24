@@ -5,19 +5,17 @@ from data.crystalpay_sdk import CrystalPAY, InvoiceType
 from aiogram.types import Message, CallbackQuery
 from aiogram.dispatcher import FSMContext
 
-from telegram.handlers.base import send_image
 from telegram.states import BuySubscription
 from telegram.initializer import dp
 from telegram.keyboards import (
     main_markup,
-    back_markup,
     buy_subscription,
     payment_systems_markup,
     crystal_pay,
     accept_or_back_markup,
     accept,
     back,
-    cancel,
+    cancel, payment_days_markup, payment_tasks_markup,
 )
 from telegram.payment import calculate_price
 from addons.validators import payment_validator
@@ -33,8 +31,8 @@ async def buy_subscription_handler(query: CallbackQuery) -> Message:
             reply_markup=await main_markup()
         )
     await BuySubscription.system.set()
-    return await query.message.answer(
-        text='Выберите платёжную систему',
+    return await query.message.edit_caption(
+        caption='Выберите платёжную систему',
         reply_markup=await payment_systems_markup()
     )
 
@@ -42,62 +40,62 @@ async def buy_subscription_handler(query: CallbackQuery) -> Message:
 @dp.callback_query_handler(lambda query: query.data in (crystal_pay, cancel), state=BuySubscription.system)
 async def process_payment_system(query: CallbackQuery, state: FSMContext) -> Message:
     if query.data == cancel:
+        # TODO: Понять почему удаляется сообщение
+        print(" I AM HERE")
         await state.finish()
-        return await send_image(
-            cid=query.from_user.id,
+        return await query.message.edit_caption(
             caption="",
-            markup=await main_markup()
+            reply_markup=await main_markup()
         )
     async with state.proxy() as data:
         data["payment_system"] = query.data
     await BuySubscription.days.set()
-    return await query.message.answer(
-        text='Сколько дней подписки хотите?\n'
-        'Напишите количество.',
-        reply_markup=await back_markup()
+    return await query.message.edit_caption(
+        caption='Сколько дней подписки хотите?',
+        reply_markup=await payment_days_markup()
     )
 
 
-@dp.message_handler(state=BuySubscription.days)
-async def get_time(message: Message, state: FSMContext) -> Message:
-    if message.text == back:
+@dp.callback_query_handler(state=BuySubscription.days)
+async def get_time(query: CallbackQuery, state: FSMContext) -> Message:
+    if query.data == back:
         await BuySubscription.system.set()
-        return await message.answer(
-            text='Выберите платёжную систему',
+        return await query.message.edit_caption(
+            caption='Выберите платёжную систему',
             reply_markup=await payment_systems_markup()
         )
     async with state.proxy() as data:
-        data['how_long'] = message.text
+        data['how_long'] = query.data
     await BuySubscription.advertisements.set()
-    return await message.answer(
-        text='Как много объявлений хотите отслежвать?',
-        reply_markup=await back_markup()
+    return await query.message.edit_caption(
+        caption='Как много объявлений хотите отслежвать?',
+        reply_markup=await payment_tasks_markup()
     )
 
 
-@dp.message_handler(state=BuySubscription.advertisements)
-async def get_tasks_quantity(message: Message, state: FSMContext) -> Message:
-    if message.text == back:
+@dp.callback_query_handler(state=BuySubscription.advertisements)
+async def get_tasks_quantity(query: CallbackQuery, state: FSMContext) -> Message:
+    if query.data == back:
         await BuySubscription.days.set()
-        return await message.answer(
-            text='Сколько дней подписки хотите?\n',
-            reply_markup=await back_markup()
+        return await query.message.edit_caption(
+            caption='Сколько дней подписки хотите?',
+            reply_markup=await payment_days_markup()
         )
     async with state.proxy() as data:
-        data['tasks_quantity'] = message.text
+        data['tasks_quantity'] = query.data
         tasks_quantity, days = data.get('tasks_quantity'), data.get('how_long')
         price = await calculate_price(tasks_quantity, days)
         data['price'] = price
 
     if not await payment_validator(tasks_quantity, days):
         await state.finish()
-        return await message.answer(
-            text='Неправильные данные',
+        return await query.message.edit_caption(
+            caption='Неправильные данные',
             reply_markup=await main_markup()
         )
     await BuySubscription.check.set()
-    return await message.answer(
-        text=f"Подтвердите данные: \n"
+    return await query.message.edit_caption(
+        caption=f"Подтвердите данные: \n"
              f"Кол-во дней: {days}\n"
              f"Кол-во объявлений: {tasks_quantity}\n\n"
              f"Итоговая стоимость: {price}р",
@@ -109,9 +107,9 @@ async def get_tasks_quantity(message: Message, state: FSMContext) -> Message:
 async def check_payment_info(query: CallbackQuery, state: FSMContext):
     if query.data == back:
         await BuySubscription.advertisements.set()
-        return await query.message.answer(
-            text='Как много объявлений хотите отслежвать?',
-            reply_markup=await back_markup()
+        return await query.message.edit_caption(
+            caption='Как много объявлений хотите отслежвать?',
+            reply_markup=await payment_tasks_markup()
         )
     if query.data == accept:
         async with state.proxy() as data:
@@ -128,11 +126,9 @@ async def check_payment_info(query: CallbackQuery, state: FSMContext):
             data["pay_id"] = response.get("id")
             payment_url = response.get("url")
         await BuySubscription.payment.set()
-        await query.message.answer(
-            text=f"Ссылка для оплаты: {payment_url}",
-        )
-        return await query.message.answer(
-            text=f"Подтвердите оплату по ссылке?",
+        return await query.message.edit_caption(
+            caption=f"Ссылка для оплаты: {payment_url}\n"
+                    f"Подтвердите оплату по ссылке?",
             reply_markup=await accept_or_back_markup()
         )
 
@@ -142,10 +138,9 @@ async def process_payment(query: CallbackQuery, state: FSMContext):
     if query.data == back:
         await state.finish()
         await query.answer(text='Отмена оплаты')
-        return await send_image(
-            cid=query.from_user.id,
+        return await query.message.edit_caption(
             caption="",
-            markup=await main_markup()
+            reply_markup=await main_markup()
         )
     if query.data == accept:
         async with state.proxy() as data:
@@ -168,10 +163,9 @@ async def process_payment(query: CallbackQuery, state: FSMContext):
 
 async def error_payment(query: CallbackQuery, state: FSMContext):
     await state.finish()
-    await send_image(
-        cid=query.from_user.id,
+    return await query.message.edit_caption(
         caption=f'Ссылка истекла или произошла ошибка, попробуйте повторить процесс пополнения кошелька.',
-        markup=await main_markup()
+        reply_markup=await main_markup()
     )
 
 
@@ -189,10 +183,9 @@ async def success_payment(query: CallbackQuery, state: FSMContext):
             worker_quantity=data.get("tasks_quantity")
         )
     await state.finish()
-    await send_image(
-        cid=query.from_user.id,
+    return await query.message.edit_caption(
         caption=f'Оплата прошла успешно!',
-        markup=await main_markup()
+        reply_markup=await main_markup()
     )
 
 
