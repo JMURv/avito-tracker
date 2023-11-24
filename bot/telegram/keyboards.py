@@ -7,8 +7,23 @@ my_tasks = "📋 Мои задачи"
 stop_all_tasks = "⚠ Остановить слежение"
 start_all_tasks = "📡 Запустить слежение"
 buy_subscription = "⭐ Купить подписку"
+support = "Помощь"
+rules = "Правила"
+
 cancel = "Отмена"
 back = "Назад"
+
+accept = "✅"
+crystal_pay = "💎 Crystal Pay"
+
+
+async def accept_or_back_markup():
+    markup = InlineKeyboardMarkup(selective=True)
+    markup.row(
+        InlineKeyboardButton(text=accept, callback_data=accept),
+        InlineKeyboardButton(text=back, callback_data=back)
+    )
+    return markup
 
 
 async def main_markup():
@@ -54,6 +69,17 @@ async def back_markup():
 
 async def cancel_markup():
     markup = InlineKeyboardMarkup(selective=True)
+    markup.add(
+        InlineKeyboardButton(text=cancel, callback_data=cancel)
+    )
+    return markup
+
+
+async def payment_systems_markup():
+    markup = InlineKeyboardMarkup(selective=True)
+    markup.add(
+        InlineKeyboardButton(text=crystal_pay, callback_data=crystal_pay)
+    )
     markup.add(
         InlineKeyboardButton(text=cancel, callback_data=cancel)
     )

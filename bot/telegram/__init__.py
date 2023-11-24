@@ -1,4 +1,4 @@
-from .handlers import bot_start
+from .handlers.base import bot_start
 
 
 __all__ = [

@@ -1,4 +1,4 @@
-from data_base import DBCommands
+from db import DBCommands
 
 
 DB = DBCommands()

@@ -3,7 +3,7 @@ from loguru import logger
 from parsing.parser import sync_avito
 from telegram.initializer import dp
 from telegram.keyboards import item_inline_kb
-from data_base import DBCommands
+from db import DBCommands
 
 
 async def form_answer(user_id: int, task: dict, name: str) -> None:

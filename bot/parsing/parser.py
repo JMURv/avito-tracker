@@ -61,7 +61,7 @@ def parse_info(page: str) -> dict[str, str]:
 
 
 def sync_avito(url: str):
-    print('start parsing...')
+    print(f'start parsing for {url}')
     response = requests.get(url)
     response.raise_for_status()
     new_data = parse_info(response.text)

@@ -11,5 +11,8 @@ class DeleteTask(StatesGroup):
 
 
 class BuySubscription(StatesGroup):
-    how_long = State()
-    how_many = State()
+    system = State()
+    days = State()
+    advertisements = State()
+    check = State()
+    payment = State()

@@ -112,11 +112,10 @@ class DBPayment(DBConnect):
             return False if data == 0 else True
 
     async def create_new_subscriber(
-            self, user_id: int, now: str, end: str, data: dict) -> None:
+            self, user_id: int, now, end, worker_quantity: dict) -> None:
         """CRUD Payment. Create a subscriber."""
         await DBConnect.connect(self)
         async with self.pool.acquire() as conn:
-            worker_quantity = data.get('worker_quantity')
             reg_query = f"""
                     INSERT INTO subscribers
                     (user_id, purchase_date, end_date, workers_quantity)
