@@ -1,3 +1,4 @@
+from loguru import logger
 import requests
 from bs4 import BeautifulSoup
 import re
@@ -30,38 +31,48 @@ def parse_info(page: str) -> dict[str, str]:
             else:
                 info['description'] = result
         except Exception:
-            info['description'] = 'Не удалось поучить описание'
+            error_message = "Не удалось получить описание"
+            logger.debug(error_message)
+            info['description'] = error_message
 
         try:
             info['price'] = link.find(
                 'meta', {'itemprop': 'price'})['content']
         except Exception:
-            info['price'] = 'Не удалось получить цену'
+            error_message = "Не удалось получить цену"
+            logger.debug(error_message)
+            info['price'] = error_message
 
         try:
             result = link.find(
                 'a', {'itemprop': 'url'})['href']
             info['link'] = f"{BASE_URL}{result}"
         except Exception:
-            info['link'] = 'Не удалось получить ссылку'
+            error_message = "Не удалось получить ссылку"
+            logger.debug(error_message)
+            info['link'] = error_message
 
         try:
             info['name'] = link.find(
                 'h3', {'itemprop': 'name'}).text
         except Exception:
-            info['name'] = 'Не удалось получить имя'
+            error_message = "Не удалось получить имя"
+            logger.debug(error_message)
+            info['name'] = error_message
 
         try:
             info['img'] = link.findNext('img')['src']
         except Exception:
-            info['img'] = 'Не удалось получить картинку'
+            error_message = "Не удалось получить картинку"
+            logger.debug(error_message)
+            info['img'] = error_message
 
         break
     return info
 
 
 def sync_avito(url: str):
-    print(f'start parsing for {url}')
+    logger.debug(f"Start parsing for: {url}")
     response = requests.get(url)
     response.raise_for_status()
     new_data = parse_info(response.text)

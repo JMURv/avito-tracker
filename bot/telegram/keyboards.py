@@ -1,5 +1,6 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
+from telegram.callbacks import task_cb
 
 add_task = "✅ Добавить объявление"
 delete_task = "❌ Удалить объявление"
@@ -10,8 +11,8 @@ buy_subscription = "⭐ Купить подписку"
 support = "Помощь"
 rules = "Правила"
 
-cancel = "Отмена"
-back = "Назад"
+cancel = "❌"
+back = "◀️"
 
 accept = "✅"
 crystal_pay = "💎 Crystal Pay"
@@ -30,21 +31,36 @@ available_tasks = [
 ]
 
 
+async def all_user_tasks_markup(tasks_names):
+    markup = InlineKeyboardMarkup(selective=True)
+    for task_name in tasks_names:
+        markup.add(
+            InlineKeyboardButton(
+                task_name,
+                callback_data=task_cb.new(
+                    name=task_name,
+                    action='remove'
+                )
+            )
+        )
+    markup.row(
+        InlineKeyboardButton(text=back, callback_data=back),
+        InlineKeyboardButton(text=add_task, callback_data=add_task),
+    )
+    return markup
+
+
 async def accept_or_back_markup():
     markup = InlineKeyboardMarkup(selective=True)
     markup.row(
+        InlineKeyboardButton(text=back, callback_data=back),
         InlineKeyboardButton(text=accept, callback_data=accept),
-        InlineKeyboardButton(text=back, callback_data=back)
     )
     return markup
 
 
 async def main_markup():
     markup = InlineKeyboardMarkup(selective=True)
-    markup.add(
-        InlineKeyboardButton(text=add_task, callback_data=add_task),
-        InlineKeyboardButton(text=delete_task, callback_data=delete_task)
-    )
     markup.add(
         InlineKeyboardButton(text=my_tasks, callback_data=my_tasks),
         InlineKeyboardButton(text=buy_subscription, callback_data=buy_subscription)
@@ -62,10 +78,6 @@ async def main_markup():
 
 async def active_tracking_markup():
     markup = InlineKeyboardMarkup(selective=True)
-    markup.add(
-        InlineKeyboardButton(text=add_task, callback_data=add_task),
-        InlineKeyboardButton(text=delete_task, callback_data=delete_task)
-    )
     markup.add(
         InlineKeyboardButton(text=my_tasks, callback_data=my_tasks),
         InlineKeyboardButton(text=buy_subscription, callback_data=buy_subscription)
@@ -102,17 +114,21 @@ async def payment_systems_markup():
         InlineKeyboardButton(text=crystal_pay, callback_data=crystal_pay)
     )
     markup.add(
-        InlineKeyboardButton(text=cancel, callback_data=cancel)
+        InlineKeyboardButton(text=back, callback_data=back)
     )
     return markup
 
 
 async def payment_days_markup():
     markup = InlineKeyboardMarkup(selective=True)
-    for day in available_days:
-        markup.add(
-            InlineKeyboardButton(text=day, callback_data=day)
-        )
+    markup.row(
+        InlineKeyboardButton(text=available_days[0], callback_data=available_days[0]),
+        InlineKeyboardButton(text=available_days[1], callback_data=available_days[1]),
+    )
+    markup.row(
+        InlineKeyboardButton(text=available_days[2], callback_data=available_days[2]),
+        InlineKeyboardButton(text=available_days[3], callback_data=available_days[3]),
+    )
     markup.add(
         InlineKeyboardButton(text=back, callback_data=back)
     )
@@ -121,10 +137,11 @@ async def payment_days_markup():
 
 async def payment_tasks_markup():
     markup = InlineKeyboardMarkup(selective=True)
-    for day in available_tasks:
-        markup.add(
-            InlineKeyboardButton(text=day, callback_data=day)
-        )
+    markup.row(
+        InlineKeyboardButton(text=available_tasks[0], callback_data=available_tasks[0]),
+        InlineKeyboardButton(text=available_tasks[1], callback_data=available_tasks[1]),
+        InlineKeyboardButton(text=available_tasks[2], callback_data=available_tasks[2]),
+    )
     markup.add(
         InlineKeyboardButton(text=back, callback_data=back)
     )

@@ -37,11 +37,9 @@ async def buy_subscription_handler(query: CallbackQuery) -> Message:
     )
 
 
-@dp.callback_query_handler(lambda query: query.data in (crystal_pay, cancel), state=BuySubscription.system)
+@dp.callback_query_handler(lambda query: query.data in (crystal_pay, back), state=BuySubscription.system)
 async def process_payment_system(query: CallbackQuery, state: FSMContext) -> Message:
-    if query.data == cancel:
-        # TODO: Понять почему удаляется сообщение
-        print(" I AM HERE")
+    if query.data == back:
         await state.finish()
         return await query.message.edit_caption(
             caption="",

@@ -207,6 +207,15 @@ class DBCommands(DBTracking, DBPayment):
             result = {row[0]: row[1] for row in data}
         return result
 
+    async def read_user_task_names(self, user_id: int) -> list:
+        await DBConnect.connect(self)
+        async with self.pool.acquire() as conn:
+            query = f"""
+            SELECT TASK_NAME
+            FROM workers
+            WHERE USER_ID = {user_id}"""
+            return [name[0] for name in await conn.fetch(query)]
+
     async def read_user_task(self, user_id: int) -> str:
         """CRUD operation. Reading a users tasks names"""
         await DBConnect.connect(self)

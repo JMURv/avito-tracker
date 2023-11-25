@@ -1,13 +1,14 @@
 from aiogram.dispatcher.filters.state import StatesGroup, State
 
 
+class DeleteTask(StatesGroup):
+    confirm = State()
+
+
 class AddTask(StatesGroup):
     name = State()
     url = State()
-
-
-class DeleteTask(StatesGroup):
-    name = State()
+    confirm = State()
 
 
 class BuySubscription(StatesGroup):
