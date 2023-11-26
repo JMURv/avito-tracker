@@ -60,7 +60,7 @@ async def start_tracking():
             for task_name in tasks_names:
                 task = now.get(task_name)
                 first_result = await db.read_result(user_id, task_name)
-                if task['name'] not in first_result:
+                if task is not None and task['name'] not in first_result:
                     await db.register_first_result(
                         user_id,
                         task_name,
