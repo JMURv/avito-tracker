@@ -4,5 +4,6 @@ from .tracking import dp
 from .wallet import dp
 from .help import dp
 from .rules import dp
+from .faq import dp
 
 __all__ = ["dp"]

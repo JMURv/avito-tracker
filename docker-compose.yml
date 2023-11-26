@@ -5,7 +5,7 @@ services:
     image: postgres:15.0-alpine
     restart: always
     ports:
-      - "5432:5432"
+      - "5433:5432"
     env_file:
       - docker/env/.env
     volumes:
@@ -16,7 +16,7 @@ services:
     env_file:
       - docker/env/.env
     ports:
-      - "15432:80"
+      - "15433:80"
     volumes:
       - pgadmin_avito:/var/lib/pgadmin
     depends_on:

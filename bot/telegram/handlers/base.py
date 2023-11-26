@@ -30,23 +30,6 @@ async def send_welcome(message: types.Message):
         )
 
 
-@dp.message_handler(commands=['help'])
-async def send_help(message: types.Message):
-    await message.answer(
-        "1. Сколько я могу завести объявлений?\n"
-        "Ответ: Не более 1 объявления для бесплатного аккаунта.\n\n"
-        "2. Какая ссылка требуется для трекинга?\n"
-        "Ответ: Ссылка из поиска авито. "
-        "Выбирайте отображение списком, не плит!"
-        "Можно настраивать всё, что предлагает сервис: "
-        "цену, доставку и тд.\n"
-        "Главное, что Вам нужно сделать - "
-        "установить сортировку по дате, "
-        "иначе бот будет работать неправильно.\n\n",
-        reply_markup=await main_markup()
-    )
-
-
 async def bot_start():
     await dp.skip_updates()
     await dp.start_polling(bot)

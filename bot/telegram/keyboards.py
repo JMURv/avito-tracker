@@ -8,8 +8,9 @@ my_tasks = "📋 Мои задачи"
 stop_all_tasks = "⚠ Остановить слежение"
 start_all_tasks = "📡 Запустить слежение"
 buy_subscription = "⭐ Купить подписку"
-support = "Помощь"
-rules = "Правила"
+support = "🆘 Помощь"
+rules = "📜 Правила"
+faq = "❓ FAQ"
 
 cancel = "❌"
 back = "◀️"
@@ -70,8 +71,9 @@ async def main_markup():
         InlineKeyboardButton(text=stop_all_tasks, callback_data=stop_all_tasks)
     )
     markup.add(
+        InlineKeyboardButton(text=faq, callback_data=faq),
         InlineKeyboardButton(text=rules, callback_data=rules),
-        InlineKeyboardButton(text=support, callback_data=support)
+        InlineKeyboardButton(text=support, callback_data=support),
     )
     return markup
 
@@ -86,6 +88,7 @@ async def active_tracking_markup():
         InlineKeyboardButton(text=stop_all_tasks, callback_data=stop_all_tasks)
     )
     markup.add(
+        InlineKeyboardButton(text=faq, callback_data=faq),
         InlineKeyboardButton(text=rules, callback_data=rules),
         InlineKeyboardButton(text=support, callback_data=support)
     )
