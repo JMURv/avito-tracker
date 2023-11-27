@@ -3,9 +3,14 @@ FROM python:3.11-alpine
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
 
+# Install chrome
+
+RUN apk update && apk upgrade
+RUN apk add chromium chromium-chromedriver
+
 WORKDIR ./app/bot
 
-RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev
+RUN apk add postgresql-dev gcc python3-dev musl-dev
 
 COPY ./bot/poetry.lock ./bot/pyproject.toml ./
 
