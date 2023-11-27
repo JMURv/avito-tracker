@@ -67,7 +67,7 @@ def parse_info(page: str) -> dict[str, str]:
         except Exception:
             error_message = "Не удалось получить картинку"
             logger.debug(error_message)
-            info['img'] = error_message
+            info['img'] = None
 
         break
     return info
@@ -79,9 +79,8 @@ def sync_avito(url: str):
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
-
+    
     driver = webdriver.Chrome(options=options)
-
     try:
         driver.get(url)
         sleep(5)
@@ -91,7 +90,6 @@ def sync_avito(url: str):
         driver.quit()
         return parse_info(page_source)
     except Exception as ex:
-        print(ex)
         logger.error(f"Selenium error: {ex}")
         driver.close()
         driver.quit()

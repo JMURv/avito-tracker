@@ -1,5 +1,4 @@
 import asyncio
-from loguru import logger
 from parsing.parser import sync_avito
 from telegram.initializer import dp
 from telegram.keyboards import item_inline_kb
@@ -7,23 +6,23 @@ from db import DBCommands
 
 
 async def form_answer(user_id: int, task: dict, name: str) -> None:
-    markup = await item_inline_kb(task['link'])
+    markup = await item_inline_kb(task.get('link'))
     text = f"Обновление для {name}!\n\n" \
-           f"Название: {task['name']}\n\n" \
-           f"Цена: {task['price']}р\n\n" \
-           f"Описание: {task['description']}\n\n"
-    try:
+           f"Название: {task.get('name', '')}\n\n" \
+           f"Цена: {task.get('price', '')}р\n\n" \
+           f"Описание: {task.get('description', '')}\n\n"
+    image = task.get('img', None)
+    if image:
         await dp.bot.send_photo(
             chat_id=user_id,
-            photo=f"{task['img']}",
+            photo=f"{image}",
             caption=text,
             reply_markup=markup
         )
-    except Exception as exception:
-        logger.critical(f'Following exception was caught: {exception}')
+    else:
         await dp.bot.send_message(
             chat_id=user_id,
-            text=f'Задача: {name}\n\n{text}',
+            text=text,
             reply_markup=markup,
         )
 
@@ -60,11 +59,15 @@ async def start_tracking():
             for task_name in tasks_names:
                 task = now.get(task_name)
                 first_result = await db.read_result(user_id, task_name)
-                if task is not None and task['name'] not in first_result:
+                if task is not None and task.get('name') not in first_result:
                     await db.register_first_result(
                         user_id,
                         task_name,
-                        task['name']
+                        task.get('name')
                     )
-                    await form_answer(user_id, task, task_name)
+                    await form_answer(
+                        user_id=user_id,
+                        task=task,
+                        name=task_name
+                    )
                 await asyncio.sleep(20)
