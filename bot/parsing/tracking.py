@@ -12,7 +12,7 @@ async def form_answer(user_id: int, task: dict, name: str):
            f"Название: {task.get('name', '')}\n\n" \
            f"Цена: {task.get('price', '')}р\n\n" \
            f"Описание: {task.get('description', '')}\n\n"
-    image = task.get('img', None)
+    image = task.get('img', False)
     if image:
         return await dp.bot.send_photo(
             chat_id=user_id,
@@ -44,7 +44,7 @@ async def start_tracking():
     """
     Функция забирает активные задачи для каждого пользователя
     и формирует из них Future объект для ПОСЛЕДОВАТЕЛЬНОГО выполнения
-    Это обусловлено возможностью получить бан пой IP на авито или капчу
+    Это обусловлено возможностью получить бан по IP на авито или капчу
     """
     db = DBCommands()
     while True:
@@ -59,6 +59,7 @@ async def start_tracking():
                 )
                 first_result = await db.read_result(user_id, task_name)
                 if result is not None and result.get('name') not in first_result:
+                    logger.debug("Найдено новое объявление")
                     await db.register_first_result(
                         user_id,
                         task_name,
