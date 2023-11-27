@@ -21,10 +21,10 @@ I've used Crystal PAY system to integrate payments to make it all possible. Sub 
 ## Image Examples
 ### Message from bot example.
 
-![example-of-message.png](https://wampi.ru/image/YxzMAUghttps://wampi.ru/image/YxzMqSt)
+![example-of-message.png](https://i1.wampi.ru/2023/11/27/photo_2023-11-27_17-56-14.jpg)
 
  There is update about "RTX 3080" task.
 ___
 ### Interface example
 
-![example-of-interface.png](https://wampi.ru/image/YxzMAUg)
+![example-of-interface.png](https://im.wampi.ru/2023/11/27/photo_2023-11-27_17-55-47.jpg)
