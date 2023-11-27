@@ -43,7 +43,7 @@ def parse_info(page: str) -> dict[str, str]:
         except Exception:
             error_message = "Не удалось получить цену"
             logger.error(error_message)
-            info['price'] = False
+            info['price'] = error_message
 
         try:
             result = link.find(

@@ -65,7 +65,7 @@ async def start_tracking():
                 adv_desc = result.get("description")
                 adv_image = result.get('img')
                 first_result = await db.read_result(user_id, task_name)
-                if all([adv_name, adv_price, adv_href]) and adv_name not in first_result:
+                if all([adv_name, adv_href]) and adv_name not in first_result:
                     logger.debug("Найдено новое объявление")
                     await db.register_first_result(
                         user_id,
