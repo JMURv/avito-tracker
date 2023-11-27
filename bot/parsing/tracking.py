@@ -6,17 +6,26 @@ from telegram.keyboards import item_inline_kb
 from db import DBCommands
 
 
-async def form_answer(user_id: int, task: dict, name: str):
-    markup = await item_inline_kb(task.get('link'))
-    text = f"Обновление для {name}!\n\n" \
-           f"Название: {task.get('name', '')}\n\n" \
-           f"Цена: {task.get('price', '')}р\n\n" \
-           f"Описание: {task.get('description', '')}\n\n"
-    image = task.get('img', False)
-    logger.debug(f"Image data: {image}")
+UPDATE_TEXT = """
+Обновление для {task_name}!
+
+Название: {adv_name}
+Цена: {adv_price}
+Описание: {adv_desc}
+"""
+
+
+async def form_answer(user_id, task_name, adv_name, adv_href, adv_price, adv_desc, adv_image):
+    markup = await item_inline_kb(adv_href)
+    logger.debug(f"Image data: {adv_image}")
     return await bot.send_message(
         chat_id=user_id,
-        text=text,
+        text=UPDATE_TEXT.format(
+            task_name=task_name,
+            adv_name=adv_name,
+            adv_price=adv_price,
+            adv_desc=adv_desc
+        ),
         reply_markup=markup,
     )
 
@@ -50,8 +59,13 @@ async def start_tracking():
                 result = await asyncio.create_task(
                     asyncio.to_thread(sync_avito, task_url)
                 )
+                adv_name = result.get("name")
+                adv_price = result.get("price")
+                adv_href = result.get("link")
+                adv_desc = result.get("description")
+                adv_image = result.get('img')
                 first_result = await db.read_result(user_id, task_name)
-                if result is not None and result.get('name') not in first_result:
+                if all([adv_name, adv_price, adv_href]) and adv_name not in first_result:
                     logger.debug("Найдено новое объявление")
                     await db.register_first_result(
                         user_id,
@@ -60,7 +74,11 @@ async def start_tracking():
                     )
                     await form_answer(
                         user_id=user_id,
-                        task=result,
-                        name=task_name
+                        task_name=task_name,
+                        adv_name=adv_name,
+                        adv_href=adv_href,
+                        adv_price=adv_price,
+                        adv_desc=adv_desc,
+                        adv_image=adv_image,
                     )
                 await asyncio.sleep(10)

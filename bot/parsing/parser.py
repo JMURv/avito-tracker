@@ -29,12 +29,12 @@ def parse_info(page: str) -> dict[str, str]:
                 new = ' '.join(
                     result.split(' ')[:MAX_DESCRIPTION_WORDS_LENGTH]
                 )
-                info['description'] = f"{new}..."
+                info['description'] = new + "..."
             else:
                 info['description'] = result
         except Exception:
             error_message = "Не удалось получить описание"
-            logger.debug(error_message)
+            logger.error(error_message)
             info['description'] = error_message
 
         try:
@@ -42,8 +42,8 @@ def parse_info(page: str) -> dict[str, str]:
                 'meta', {'itemprop': 'price'})['content']
         except Exception:
             error_message = "Не удалось получить цену"
-            logger.debug(error_message)
-            info['price'] = error_message
+            logger.error(error_message)
+            info['price'] = False
 
         try:
             result = link.find(
@@ -51,23 +51,23 @@ def parse_info(page: str) -> dict[str, str]:
             info['link'] = f"{BASE_URL}{result}"
         except Exception:
             error_message = "Не удалось получить ссылку"
-            logger.debug(error_message)
-            info['link'] = error_message
+            logger.error(error_message)
+            info['link'] = False
 
         try:
             info['name'] = link.find(
                 'h3', {'itemprop': 'name'}).text
         except Exception:
             error_message = "Не удалось получить имя"
-            logger.debug(error_message)
-            info['name'] = error_message
+            logger.error(error_message)
+            info['name'] = False
 
         try:
             info['img'] = link.findNext('img')['src']
         except Exception:
             error_message = "Не удалось получить картинку"
-            logger.debug(error_message)
-            info['img'] = None
+            logger.error(error_message)
+            info['img'] = False
 
         break
     return info
