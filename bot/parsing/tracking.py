@@ -1,7 +1,7 @@
 from loguru import logger
 import asyncio
 from parsing.parser import sync_avito
-from telegram.initializer import dp
+from telegram.initializer import bot
 from telegram.keyboards import item_inline_kb
 from db import DBCommands
 
@@ -13,19 +13,12 @@ async def form_answer(user_id: int, task: dict, name: str):
            f"Цена: {task.get('price', '')}р\n\n" \
            f"Описание: {task.get('description', '')}\n\n"
     image = task.get('img', False)
-    if image:
-        return await dp.bot.send_photo(
-            chat_id=user_id,
-            photo=f"{image}",
-            caption=text,
-            reply_markup=markup
-        )
-    else:
-        return await dp.bot.send_message(
-            chat_id=user_id,
-            text=text,
-            reply_markup=markup,
-        )
+    logger.debug(f"Image data: {image}")
+    return await bot.send_message(
+        chat_id=user_id,
+        text=text,
+        reply_markup=markup,
+    )
 
 
 async def is_trackable(user_id: int, tasks_quantity: int) -> bool:

@@ -33,6 +33,7 @@ services:
       - .:/app
     depends_on:
       - postgres
+      - pgadmin
     command: sh -c "poetry run python scripts/install_db.py &&
       poetry run python run.py"
 volumes:
