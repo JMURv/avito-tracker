@@ -10,11 +10,12 @@ class DBConnect:
         self.pool = None
 
     async def connect(self):
+        # return await asyncpg.connect(self.dsn)
         if self.pool is None:
             self.pool = await asyncpg.create_pool(
                 dsn=self.dsn,
-                min_size=1,
-                max_size=1024
+                min_size=10,
+                max_size=1024,
             )
 
 
@@ -29,6 +30,7 @@ class DBTracking(DBConnect):
                 WHERE user_id = {user_id};
                 """
             await conn.execute(update_query)
+            await conn.release()
 
     async def disable_track(self, user_id: int) -> None:
         """Tracking. Disable it and remove results."""
