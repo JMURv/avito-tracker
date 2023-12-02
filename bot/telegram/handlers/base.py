@@ -2,9 +2,18 @@ from loguru import logger
 from aiogram import types
 from telegram.initializer import dp, bot
 from telegram.keyboards import (
-    main_markup,
+    main_markup, main_menu,
 )
 from db import DBCommands
+
+
+@dp.callback_query_handler(main_menu)
+async def return_to_main_menu(query: types.CallbackQuery):
+    await send_image(
+        cid=query.from_user.id,
+        caption="",
+        markup=await main_markup()
+    )
 
 
 async def send_image(cid, caption: str, markup: types.InlineKeyboardMarkup):

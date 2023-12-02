@@ -2,6 +2,8 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from telegram.callbacks import task_cb
 
+
+main_menu = "◀️ Главное меню"
 add_task = "✅ Добавить объявление"
 delete_task = "❌ Удалить объявление"
 my_tasks = "📋 Мои задачи"

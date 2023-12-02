@@ -10,7 +10,9 @@ UPDATE_TEXT = """
 Обновление для {task_name}!
 
 Название: {adv_name}
+
 Цена: {adv_price}
+
 Описание: {adv_desc}
 """
 
