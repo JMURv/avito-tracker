@@ -14,7 +14,7 @@ class DBConnect:
         if self.pool is None:
             self.pool = await asyncpg.create_pool(
                 dsn=self.dsn,
-                min_size=10,
+                min_size=50,
                 max_size=1024,
             )
 
