@@ -7,7 +7,7 @@ from telegram.keyboards import (
 from db import DBCommands
 
 
-@dp.callback_query_handler(main_menu)
+@dp.callback_query_handler(lambda q: q.data == main_menu)
 async def return_to_main_menu(query: types.CallbackQuery):
     await send_image(
         cid=query.from_user.id,
