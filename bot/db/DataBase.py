@@ -7,22 +7,7 @@ from asyncpg import exceptions
 DSN = os.getenv("DSN")
 
 
-class DBConnect:
-    def __init__(self):
-        self.dsn = os.getenv("DSN")
-        self.pool = None
-
-    async def connect(self):
-        # return await asyncpg.connect(self.dsn)
-        if self.pool is None:
-            self.pool = await asyncpg.create_pool(
-                dsn=self.dsn,
-                min_size=10,
-                max_size=10,
-            )
-
-
-class DBTracking():
+class DBTracking:
     async def enable_track(self, user_id: int) -> None:
         """Tracking. Enable it."""
         conn = await asyncpg.connect(DSN)
@@ -57,9 +42,9 @@ class DBTracking():
         FROM results
         WHERE user_id = {user_id}
         """
-        data = await conn.fetch(query)
+        response = await conn.fetch(query)
         await conn.close()
-        return True if len(data) > 0 else False
+        return True if len(response) > 0 else False
 
     async def read_result(self, user_id: int, task_name: str) -> list:
         """Tracking. Check users last result"""
@@ -70,10 +55,10 @@ class DBTracking():
         WHERE user_id = {user_id}
         AND task_name = '{task_name}'
         """
-        data = await conn.fetch(query)
-        ready_data = [task[0] for task in data]
+
+        response = [task[0] for task in await conn.fetch(query)]
         await conn.close()
-        return ready_data
+        return response
 
     async def register_first_result(
             self, user_id: int, task_name: str, first_result_name: str):
@@ -84,11 +69,12 @@ class DBTracking():
         (USER_ID, TASK_NAME, FIRST_NAME)
         VALUES ({user_id}, '{task_name}', '{first_result_name}');
         """
+
         await conn.execute(reg_query)
         await conn.close()
 
 
-class DBPayment(DBConnect):
+class DBPayment:
     async def worker_quantity_check(self, user_id: int) -> int:
         """CRUD Payment. Read how many workers are allowed."""
         conn = await asyncpg.connect(DSN)
@@ -98,9 +84,10 @@ class DBPayment(DBConnect):
                     FROM subscribers
                     WHERE user_id = {user_id}
                     AND end_date > '{now}';"""
-        data = await conn.fetchval(workers_query)
+
+        response = await conn.fetchval(workers_query)
         await conn.close()
-        return data
+        return response
 
     async def is_subscriber(self, user_id: int) -> bool:
         """CRUD Payment. Read if user is subscriber or not."""
@@ -111,9 +98,10 @@ class DBPayment(DBConnect):
                 FROM subscribers
                 WHERE user_id = {user_id}
                 AND end_date > '{now}';"""
-        data = await conn.fetchval(check_query)
+
+        response = await conn.fetchval(check_query)
         await conn.close()
-        return False if data == 0 else True
+        return False if response == 0 else True
 
     async def create_new_subscriber(
             self, user_id: int, now, end, worker_quantity: dict) -> None:
@@ -137,10 +125,9 @@ class DBCommands(DBTracking, DBPayment):
         FROM users
         WHERE is_tracking = 1
         """
-        data = await conn.fetch(query)
-        ready_data = [user_id[0] for user_id in data]
+        response = [user_id[0] for user_id in await conn.fetch(query)]
         await conn.close()
-        return ready_data
+        return response
 
     async def is_alive(self, user_id: int):
         conn = await asyncpg.connect(DSN)
@@ -149,8 +136,9 @@ class DBCommands(DBTracking, DBPayment):
         FROM users
         WHERE user_id = {user_id}
         """
+        response = await conn.fetchval(query)
         await conn.close()
-        return await conn.fetchval(query)
+        return response
 
     async def create_user(self, user_id: int) -> bool:
         """CRUD operation. Create a user."""
@@ -206,8 +194,7 @@ class DBCommands(DBTracking, DBPayment):
         SELECT TASK_NAME, TASK_URL
         FROM workers
         WHERE USER_ID = {user_id}"""
-        data = await conn.fetch(read_query)
-        result = {row[0]: row[1] for row in data}
+        result = {row[0]: row[1] for row in await conn.fetch(read_query)}
         await conn.close()
         return result
 
@@ -217,8 +204,9 @@ class DBCommands(DBTracking, DBPayment):
         SELECT TASK_NAME
         FROM workers
         WHERE USER_ID = {user_id}"""
+        response = [name[0] for name in await conn.fetch(query)]
         await conn.close()
-        return [name[0] for name in await conn.fetch(query)]
+        return response
 
     async def read_user_task(self, user_id: int) -> str:
         """CRUD operation. Reading a users tasks names"""
@@ -227,10 +215,10 @@ class DBCommands(DBTracking, DBPayment):
         SELECT TASK_NAME, TASK_URL
         FROM workers
         WHERE USER_ID = {user_id}"""
-        data = await conn.fetch(check_query)
+
         result = [
             f"{name[0]} || {name[1]}"
-            for name in data
+            for name in await conn.fetch(check_query)
         ]
         await conn.close()
         return ', \n'.join(result)
