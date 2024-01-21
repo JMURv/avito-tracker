@@ -156,7 +156,7 @@ async def payment_tasks_markup():
 async def item_inline_kb(url: str, text='Ссылка') -> InlineKeyboardMarkup:
     keyboard = InlineKeyboardMarkup(selective=True, row_width=1)
     keyboard.add(
-        InlineKeyboardButton(text=stop_all_tasks, callback_data=stop_all_tasks),
+        InlineKeyboardButton(text=main_menu, callback_data=main_menu),
         InlineKeyboardButton(text=text, url=url)
     )
     return keyboard
